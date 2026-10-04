@@ -1,0 +1,370 @@
+{
+  "platform": "anthropic",
+  "recorded_at": "2026-08-22T08:46:59.141803+00:00",
+  "query": "雙北植牙推薦的醫生或診所？",
+  "model": "claude-sonnet-5",
+  "payload": {
+    "id": "msg_011CeHVfs45JY2XHpmx6p9BL",
+    "container": null,
+    "content": [
+      {
+        "signature": "redacted",
+        "thinking": "",
+        "type": "thinking"
+      },
+      {
+        "id": "srvtoolu_01J55dmuC51JwpJjLMJBhM5o",
+        "caller": null,
+        "input": {
+          "query": "[redacted text, 15 chars in the original]"
+        },
+        "name": "web_search",
+        "type": "server_tool_use"
+      },
+      {
+        "id": "srvtoolu_01XYpjeyqnrRPYev8XGYY2W7",
+        "caller": null,
+        "input": {
+          "query": "[redacted text, 12 chars in the original]"
+        },
+        "name": "web_search",
+        "type": "server_tool_use"
+      },
+      {
+        "caller": {
+          "type": "direct"
+        },
+        "content": [
+          {
+            "encrypted_content": "redacted",
+            "page_age": "April 24, 2026",
+            "title": "[redacted text, 28 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-1.example/page-1"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": "June 10, 2026",
+            "title": "[redacted text, 31 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-2.example/page-2"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": "January 19, 2026",
+            "title": "[redacted text, 36 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-3.example/page-3"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": "February 6, 2026",
+            "title": "[redacted text, 36 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-3.example/page-4"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": "July 6, 2026",
+            "title": "[redacted text, 39 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-4.example/page-5"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": "April 16, 2026",
+            "title": "[redacted text, 38 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-4.example/page-6"
+          }
+        ],
+        "tool_use_id": "srvtoolu_01J55dmuC51JwpJjLMJBhM5o",
+        "type": "web_search_tool_result"
+      },
+      {
+        "caller": {
+          "type": "direct"
+        },
+        "content": [
+          {
+            "encrypted_content": "redacted",
+            "page_age": null,
+            "title": "[redacted text, 28 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-5.example/page-7"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": "April 14, 2026",
+            "title": "[redacted text, 29 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-1.example/page-8"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": "July 15, 2021",
+            "title": "[redacted text, 32 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-6.example/page-9"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": null,
+            "title": "[redacted text, 26 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-7.example/page-10"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": "January 24, 2026",
+            "title": "[redacted text, 26 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-8.example/page-11"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": null,
+            "title": "[redacted text, 34 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-9.example/page-12"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": null,
+            "title": "[redacted text, 31 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-10.example/page-13"
+          },
+          {
+            "encrypted_content": "redacted",
+            "page_age": "June 18, 2026",
+            "title": "[redacted text, 18 chars in the original]",
+            "type": "web_search_result",
+            "url": "https://site-11.example/page-14"
+          }
+        ],
+        "tool_use_id": "srvtoolu_01XYpjeyqnrRPYev8XGYY2W7",
+        "type": "web_search_tool_result"
+      },
+      {
+        "signature": "redacted",
+        "thinking": "",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 159 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": [
+          {
+            "cited_text": "[redacted text, 153 chars in the original]",
+            "encrypted_index": "redacted",
+            "title": "[redacted text, 31 chars in the original]",
+            "type": "web_search_result_location",
+            "url": "https://site-2.example/page-2"
+          }
+        ],
+        "text": "[redacted text, 50 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 12 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": [
+          {
+            "cited_text": "[redacted text, 153 chars in the original]",
+            "encrypted_index": "redacted",
+            "title": "[redacted text, 31 chars in the original]",
+            "type": "web_search_result_location",
+            "url": "https://site-2.example/page-2"
+          }
+        ],
+        "text": "[redacted text, 73 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 12 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": [
+          {
+            "cited_text": "[redacted text, 153 chars in the original]",
+            "encrypted_index": "redacted",
+            "title": "[redacted text, 38 chars in the original]",
+            "type": "web_search_result_location",
+            "url": "https://site-4.example/page-6"
+          }
+        ],
+        "text": "[redacted text, 88 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 18 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": [
+          {
+            "cited_text": "[redacted text, 153 chars in the original]",
+            "encrypted_index": "redacted",
+            "title": "[redacted text, 36 chars in the original]",
+            "type": "web_search_result_location",
+            "url": "https://site-3.example/page-4"
+          }
+        ],
+        "text": "[redacted text, 63 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 76 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": [
+          {
+            "cited_text": "[redacted text, 153 chars in the original]",
+            "encrypted_index": "redacted",
+            "title": "[redacted text, 36 chars in the original]",
+            "type": "web_search_result_location",
+            "url": "https://site-3.example/page-3"
+          }
+        ],
+        "text": "[redacted text, 51 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 23 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": [
+          {
+            "cited_text": "[redacted text, 153 chars in the original]",
+            "encrypted_index": "redacted",
+            "title": "[redacted text, 39 chars in the original]",
+            "type": "web_search_result_location",
+            "url": "https://site-4.example/page-5"
+          }
+        ],
+        "text": "[redacted text, 87 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 19 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": [
+          {
+            "cited_text": "[redacted text, 153 chars in the original]",
+            "encrypted_index": "redacted",
+            "title": "[redacted text, 28 chars in the original]",
+            "type": "web_search_result_location",
+            "url": "https://site-5.example/page-7"
+          }
+        ],
+        "text": "[redacted text, 59 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 14 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": [
+          {
+            "cited_text": "[redacted text, 153 chars in the original]",
+            "encrypted_index": "redacted",
+            "title": "[redacted text, 32 chars in the original]",
+            "type": "web_search_result_location",
+            "url": "https://site-6.example/page-9"
+          }
+        ],
+        "text": "[redacted text, 41 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 20 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": [
+          {
+            "cited_text": "[redacted text, 153 chars in the original]",
+            "encrypted_index": "redacted",
+            "title": "[redacted text, 31 chars in the original]",
+            "type": "web_search_result_location",
+            "url": "https://site-10.example/page-13"
+          }
+        ],
+        "text": "[redacted text, 62 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 18 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": [
+          {
+            "cited_text": "[redacted text, 153 chars in the original]",
+            "encrypted_index": "redacted",
+            "title": "[redacted text, 26 chars in the original]",
+            "type": "web_search_result_location",
+            "url": "https://site-8.example/page-11"
+          }
+        ],
+        "text": "[redacted text, 45 chars in the original]",
+        "type": "text"
+      },
+      {
+        "citations": null,
+        "text": "[redacted text, 279 chars in the original]",
+        "type": "text"
+      }
+    ],
+    "model": "claude-sonnet-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 17599,
+      "output_tokens": 1949,
+      "output_tokens_details": {
+        "thinking_tokens": 262
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 2
+      },
+      "service_tier": "standard"
+    }
+  },
+  "redacted": {
+    "method": "redact-1",
+    "note": "URLs, page titles and all readable text replaced; structure, indices and flags unchanged"
+  }
+}

@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "answersnap"
+version = "0.1.0"
+description = "Auditable AI-visibility snapshots: what ChatGPT, Claude and Gemini actually said about a brand, with the evidence kept."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = ["geo", "generative-engine-optimization", "ai-visibility", "llm", "audit"]
+dependencies = [
+    "anthropic>=0.40",
+    "openai>=1.60",
+    "pydantic>=2.9",
+    "pyyaml>=6.0",
+    "jinja2>=3.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/GGaryyy/answersnap"
+Issues = "https://github.com/GGaryyy/answersnap/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3"]
+
+[project.scripts]
+answersnap = "answersnap.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/answersnap"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

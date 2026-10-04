@@ -1,0 +1,9 @@
+{
+  "note": "URL -> local page used by --dry-run. URLs missing here are reported as not fetched, never as unsupported.",
+  "pages": {
+    "https://example-coffee.example/espresso-starter": "example-coffee-espresso-starter.html",
+    "https://example-coffee.example/shipping": "example-coffee-shipping.html",
+    "https://sample-roasters.example/subscriptions": "sample-roasters-subscriptions.html",
+    "https://coffeeguide.example/freshness": "coffeeguide-freshness.html"
+  }
+}

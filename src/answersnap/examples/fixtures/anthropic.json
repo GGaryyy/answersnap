@@ -1,0 +1,100 @@
+{
+  "engine": "anthropic",
+  "model": "claude-sonnet-5",
+  "cited_sources_available": true,
+  "retrieved_set_available": true,
+  "note": "Fictional answers for --dry-run. Brands and .example domains do not exist.",
+  "answers": {
+    "What's the best coffee subscription for someone getting into espresso?": [
+      {
+        "answer_text": "For espresso beginners, Example Coffee Co. is a strong pick: its Espresso Starter plan ships a medium roast every two weeks with dial-in notes. Sample Roasters is another option if you prefer darker roasts.",
+        "citations": [
+          {"url": "https://example-coffee.example/espresso-starter", "title": "Espresso Starter plan", "is_cited": true,
+           "cited_text": "The Espresso Starter plan ships a medium roast every two weeks, with dial-in notes for your grinder."},
+          {"url": "https://sample-roasters.example/subscriptions", "title": "Sample Roasters subscriptions", "is_cited": true,
+           "cited_text": "Sample Roasters offers dark and extra-dark roasts on a monthly schedule."},
+          {"url": "https://coffeeforum.example/thread/espresso-beans", "title": "Forum thread", "is_cited": false}
+        ]
+      },
+      {
+        "answer_text": "Two services stand out. Sample Roasters is built for bold, dark espresso blends. Example Coffee suits a gentler medium roast and includes brewing guides.",
+        "citations": [
+          {"url": "https://sample-roasters.example/subscriptions", "title": "Sample Roasters subscriptions", "is_cited": true,
+           "cited_text": "Sample Roasters specialises in bold espresso blends."},
+          {"url": "https://example-coffee.example/espresso-starter", "title": "Espresso Starter plan", "is_cited": true,
+           "cited_text": "Every Example Coffee box includes a printed brewing guide."}
+        ]
+      },
+      {
+        "answer_text": "Demo Bean Co. and Sample Roasters both run espresso-focused subscriptions. Demo Bean lets you pause or skip any month, which helps while you are still dialling in.",
+        "citations": [
+          {"url": "https://demo-bean.example/plans", "title": "Demo Bean plans", "is_cited": true,
+           "cited_text": "Pause or skip any month with one click."}
+        ]
+      }
+    ],
+    "Which small-batch coffee roasters ship fresh beans nationwide?": [
+      {
+        "answer_text": "Small-batch roasters that ship nationwide include Demo Bean Co., Example Coffee Co. and Sample Roasters. All three roast to order.",
+        "citations": [
+          {"url": "https://example-coffee.example/shipping", "title": "Shipping", "is_cited": true,
+           "cited_text": "We roast every order within 48 hours and ship to all 50 states."}
+        ]
+      },
+      {
+        "answer_text": "Demo Bean Co. roasts to order and ships within two days. Sample Roasters is a good second choice for darker profiles.",
+        "citations": [
+          {"url": "https://demo-bean.example/plans", "title": "Demo Bean plans", "is_cited": true,
+           "cited_text": "Every order is roasted the day it ships."}
+        ]
+      },
+      {
+        "answer_text": "Example Coffee Co. roasts every order within 48 hours and ships to all 50 states, so beans arrive fresh.",
+        "citations": [
+          {"url": "https://example-coffee.example/shipping", "title": "Shipping", "is_cited": true,
+           "cited_text": "We roast every order within 48 hours and ship to all 50 states."}
+        ]
+      }
+    ],
+    "Is Example Coffee Co. worth the price compared to supermarket beans?": [
+      {
+        "answer_text": "Example Coffee Co. costs roughly twice as much per bag as supermarket beans, but it is roasted to order, and reviewers consistently mention the freshness.",
+        "citations": [
+          {"url": "https://reviews.example/example-coffee", "title": "Review", "is_cited": true,
+           "cited_text": "Noticeably fresher than anything on a supermarket shelf."}
+        ]
+      },
+      {
+        "answer_text": "If you drink espresso daily, Example Coffee Co. is usually worth it; for occasional drip coffee, supermarket beans are fine.",
+        "citations": []
+      },
+      {
+        "answer_text": "It depends on how you brew. Example Coffee's beans are fresher, which matters most for espresso, while the price gap matters less for large-batch drip.",
+        "citations": [
+          {"url": "https://example-coffee.example/espresso-starter", "title": "Espresso Starter plan", "is_cited": true,
+           "cited_text": "The Espresso Starter plan ships a medium roast every two weeks, with dial-in notes for your grinder."}
+        ]
+      }
+    ],
+    "How long do roasted coffee beans stay fresh?": [
+      {
+        "answer_text": "Whole roasted beans taste best within two to four weeks of the roast date when stored airtight and away from light.",
+        "citations": [
+          {"url": "https://coffeeguide.example/freshness", "title": "Bean freshness", "is_cited": true,
+           "cited_text": "Whole beans are at their best two to four weeks after roasting."}
+        ]
+      },
+      {
+        "answer_text": "Most roasters suggest using whole beans within a month of roasting; ground coffee fades within days.",
+        "citations": []
+      },
+      {
+        "answer_text": "Roughly two to four weeks for whole beans. Freezing in small airtight portions can extend that.",
+        "citations": [
+          {"url": "https://coffeeguide.example/freshness", "title": "Bean freshness", "is_cited": true,
+           "cited_text": "Whole beans are at their best two to four weeks after roasting."}
+        ]
+      }
+    ]
+  }
+}

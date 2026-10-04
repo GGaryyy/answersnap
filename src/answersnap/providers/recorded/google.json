@@ -1,0 +1,358 @@
+{
+  "platform": "google",
+  "recorded_at": "2026-08-30T15:10:46.250947+00:00",
+  "query": "雙北植牙推薦的醫生或診所？",
+  "model": "gemini-3.7-flash",
+  "payload": {
+    "candidates": [
+      {
+        "content": {
+          "parts": [
+            {
+              "text": "[redacted text, 1659 chars in the original]",
+              "thoughtSignature": "redacted"
+            }
+          ],
+          "role": "model"
+        },
+        "finishReason": "STOP",
+        "index": 0,
+        "groundingMetadata": {
+          "searchEntryPoint": {
+            "renderedContent": "redacted"
+          },
+          "groundingChunks": [
+            {
+              "web": {
+                "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/redacted-1",
+                "title": "site-1.example"
+              }
+            },
+            {
+              "web": {
+                "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/redacted-2",
+                "title": "site-2.example"
+              }
+            },
+            {
+              "web": {
+                "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/redacted-3",
+                "title": "site-3.example"
+              }
+            },
+            {
+              "web": {
+                "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/redacted-4",
+                "title": "site-4.example"
+              }
+            },
+            {
+              "web": {
+                "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/redacted-5",
+                "title": "site-5.example"
+              }
+            },
+            {
+              "web": {
+                "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/redacted-6",
+                "title": "site-6.example"
+              }
+            },
+            {
+              "web": {
+                "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/redacted-7",
+                "title": "site-1.example"
+              }
+            },
+            {
+              "web": {
+                "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/redacted-8",
+                "title": "site-1.example"
+              }
+            },
+            {
+              "web": {
+                "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/redacted-9",
+                "title": "site-7.example"
+              }
+            },
+            {
+              "web": {
+                "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/redacted-10",
+                "title": "site-8.example"
+              }
+            }
+          ],
+          "groundingSupports": [
+            {
+              "segment": {
+                "endIndex": 190,
+                "text": "[redacted text, 74 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                0,
+                1
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 365,
+                "endIndex": 508,
+                "text": "[redacted text, 57 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                2
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 703,
+                "endIndex": 837,
+                "text": "[redacted text, 56 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                3
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 1018,
+                "endIndex": 1140,
+                "text": "[redacted text, 50 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                4
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 1143,
+                "endIndex": 1251,
+                "text": "[redacted text, 36 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                4
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 1258,
+                "endIndex": 1298,
+                "text": "[redacted text, 18 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                4
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 1306,
+                "endIndex": 1491,
+                "text": "[redacted text, 73 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                1
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 1498,
+                "endIndex": 1541,
+                "text": "[redacted text, 19 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                1
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 1549,
+                "endIndex": 1674,
+                "text": "[redacted text, 55 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                3
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 2072,
+                "endIndex": 2260,
+                "text": "[redacted text, 72 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                5
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 2267,
+                "endIndex": 2310,
+                "text": "[redacted text, 19 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                5
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 2318,
+                "endIndex": 2443,
+                "text": "[redacted text, 57 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                6
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 2446,
+                "endIndex": 2560,
+                "text": "[redacted text, 44 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                6
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 2568,
+                "endIndex": 2762,
+                "text": "[redacted text, 76 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                6
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 2820,
+                "endIndex": 2983,
+                "text": "[redacted text, 65 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                0,
+                7,
+                1
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 2990,
+                "endIndex": 3203,
+                "text": "[redacted text, 105 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                1,
+                5,
+                8
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 3249,
+                "endIndex": 3356,
+                "text": "[redacted text, 45 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                3
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 3359,
+                "endIndex": 3435,
+                "text": "[redacted text, 32 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                0,
+                1
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 3359,
+                "endIndex": 3495,
+                "text": "[redacted text, 56 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                3,
+                5,
+                8
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 3359,
+                "endIndex": 3552,
+                "text": "[redacted text, 79 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                6,
+                9
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 3359,
+                "endIndex": 3597,
+                "text": "[redacted text, 98 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                0,
+                2
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 3601,
+                "endIndex": 3782,
+                "text": "[redacted text, 71 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                0,
+                6,
+                4
+              ]
+            },
+            {
+              "segment": {
+                "startIndex": 3789,
+                "endIndex": 3986,
+                "text": "[redacted text, 71 chars in the original]"
+              },
+              "groundingChunkIndices": [
+                0,
+                3,
+                1
+              ]
+            }
+          ],
+          "webSearchQueries": [
+            "[redacted text, 27 chars in the original]",
+            "[redacted text, 14 chars in the original]"
+          ]
+        }
+      }
+    ],
+    "usageMetadata": {
+      "promptTokenCount": 211,
+      "candidatesTokenCount": 1448,
+      "totalTokenCount": 2476,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 211
+        }
+      ],
+      "thoughtsTokenCount": 817,
+      "serviceTier": "standard"
+    },
+    "modelVersion": "gemini-3.7-flash",
+    "responseId": "5UeUaqzhGLXmosUPrb2RwQM"
+  },
+  "redacted": {
+    "method": "redact-1",
+    "note": "URLs, page titles and all readable text replaced; structure, indices and flags unchanged"
+  }
+}

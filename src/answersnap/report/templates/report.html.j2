@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI visibility snapshot: {{ report.brand.name }}</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1d2129; --muted: #5f6672; --line: #e2e5ea; --tile: #f6f7f9;
+  --brand: #0b5fff; --mark: #fff1b8; --warn-bg: #fff6e5; --warn-fg: #7a4b00; --ok: #137333;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #14161a; --fg: #e6e8eb; --muted: #9aa1ab; --line: #2b2f36; --tile: #1c1f24;
+          --brand: #7aa7ff; --mark: #4d4100; --warn-bg: #3a2c0f; --warn-fg: #ffd58a; --ok: #7bd38a; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+       font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1480px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 24px; margin: 0 0 4px; } h2 { font-size: 18px; margin: 36px 0 12px; }
+h3 { font-size: 16px; margin: 28px 0 8px; }
+.sub, .muted { color: var(--muted); }
+.notice { background: var(--warn-bg); color: var(--warn-fg); border-radius: 8px;
+          padding: 10px 14px; margin: 10px 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.tile { display: block; background: var(--tile); border: 1px solid var(--line); border-radius: 10px;
+        padding: 14px 16px; color: inherit; text-decoration: none; }
+.tile:hover { border-color: var(--brand); }
+.tile .engine { font-weight: 600; } .tile .big { font-size: 28px; font-weight: 700; margin: 4px 0; }
+.tile .ci, .tile .note { color: var(--muted); font-size: 13px; }
+.across { margin-top: 12px; }
+.badge { display: inline-block; font-size: 12px; padding: 1px 6px; border-radius: 4px;
+         border: 1px solid var(--line); color: var(--muted); }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { background: var(--tile); font-weight: 600; white-space: nowrap; }
+tr:target { outline: 2px solid var(--brand); outline-offset: -2px; }
+mark { background: var(--mark); color: inherit; padding: 0 1px; border-radius: 2px; }
+.dim { color: var(--muted); }
+.yes { color: var(--ok); font-weight: 600; }
+code { font-size: 12px; word-break: break-all; }
+td.file code, td.file a { white-space: nowrap; word-break: normal; }
+.col-question { min-width: 200px; } .col-sentence { min-width: 240px; }
+.col-excerpt { min-width: 220px; max-width: 320px; font-size: 13px; }
+.col-faith { min-width: 200px; } .col-cited { min-width: 180px; }
+dl dt { font-weight: 600; margin-top: 10px; } dl dd { margin: 2px 0 0; color: var(--muted); }
+a { color: var(--brand); }
+</style>
+</head>
+<body>
+<main>
+<h1>AI visibility snapshot: {{ report.brand.name }}</h1>
+<div class="sub">Run {{ report.run.run_id }} · {{ report.run.prompt_set.n_queries }} questions × {{ report.run.repeats }} runs · prompt set v{{ report.run.prompt_set.version }}</div>
+
+{% for notice in report.notices %}
+<div class="notice">{{ notice }}</div>
+{% endfor %}
+
+<h2>Named in recommendation answers</h2>
+<div class="tiles">
+{% for item in report.headline.per_engine %}
+  {% set m = item.named_in_rec_answers %}
+  <a class="tile" href="#evidence-{{ item.engine }}">
+    <div class="engine">{{ item.label }}</div>
+    {% if has_value(m) %}
+    <div class="big">{{ m.count }} of {{ m.n }}</div>
+    <div class="ci">{{ pct(m.rate) }} · {{ interval(m) }}{% if m.status == "low_sample" %} · <span class="badge">{{ low_sample }}</span>{% endif %}</div>
+    {% elif m %}
+    <div class="big dim">–</div><div class="note">{{ metric_text(m) }}</div>
+    {% else %}
+    <div class="big dim">–</div><div class="note">{{ missing_metric_text(report.engines[loop.index0]) }}</div>
+    {% endif %}
+  </a>
+{% endfor %}
+</div>
+{% set across = report.headline.across_engines %}
+{% if across.n %}
+<p class="across">Across engines: named in <a href="#evidence"><strong>{{ across.count }} of {{ across.n }}</strong></a> recommendation answers. This is a count, not a rate — engines are never averaged together.</p>
+{% endif %}
+
+<h2>By engine</h2>
+<div class="scroll"><table>
+<thead><tr><th>Engine</th><th>Model</th><th>Mention</th><th>Named in rec. answers</th><th>Citation of owned domains</th><th>Faithfulness</th></tr></thead>
+<tbody>
+{% for s in report.engines %}
+<tr>
+  <td><a href="#evidence-{{ s.engine }}">{{ s.label }}</a></td>
+  <td>{{ engine_status_text(s) }}</td>
+  {% if s.metrics %}
+  <td>{{ metric_text(s.metrics.mention) }}</td>
+  <td>{{ metric_text(s.metrics.named_in_rec_answers) }}</td>
+  <td>{{ metric_text(s.metrics.citation) }}</td>
+  {% else %}<td class="dim">–</td><td class="dim">–</td><td class="dim">–</td>{% endif %}
+  <td>{{ faith_summary_text(s.faithfulness) }}</td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+
+{% if report.competitors %}
+<h2>Competitor mentions</h2>
+<div class="scroll"><table>
+<thead><tr><th>Engine</th>{% for c in report.competitors %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+<tbody>
+{% for s in report.engines if s.metrics %}
+<tr><td>{{ s.label }}</td>{% for c in s.metrics.competitors %}<td>{{ metric_text(c.mention) }}</td>{% endfor %}</tr>
+{% endfor %}
+</tbody></table></div>
+{% endif %}
+
+<h2 id="evidence">Evidence</h2>
+<p class="muted">Every answer, as returned. An empty “named” cell on a recommendation question is a result: that answer did not name you. “–” means the question was not a recommendation question.</p>
+{% for s in report.engines %}
+{% set rows = report.rows | selectattr("engine", "equalto", s.engine) | list %}
+<h3 id="evidence-{{ s.engine }}">{{ s.label }}</h3>
+{% if not rows %}
+<p class="muted">{{ engine_status_text(s) }}</p>
+{% else %}
+<div class="scroll"><table>
+<thead><tr><th class="col-question">Question</th><th>Intent</th><th>Run</th><th class="col-sentence">Sentence naming the brand</th><th>Mentioned</th><th>Named in rec. answer</th><th class="col-cited">Owned citation</th><th class="col-faith">Faithfulness</th><th class="col-excerpt">Answer excerpt</th><th>File</th></tr></thead>
+<tbody>
+{% for r in rows %}
+<tr id="{{ r.id }}">
+  <td class="col-question">{{ r.query_text }}</td>
+  <td>{{ r.intent }}</td>
+  <td>{{ r.repeat + 1 }}</td>
+  <td class="col-sentence">{% for text, is_brand in r.brand_segments %}{% if is_brand %}<mark>{{ text }}</mark>{% else %}{{ text }}{% endif %}{% endfor %}</td>
+  <td>{% if r.mentioned %}<span class="yes">yes</span>{% endif %}</td>
+  <td>{% if r.named_in_rec_answer is none %}<span class="dim" title="not a recommendation question">–</span>{% elif r.named_in_rec_answer %}<span class="yes">yes</span>{% endif %}</td>
+  <td class="col-cited">{% if not r.citations_observable %}<span class="dim">not observable</span>{% else %}{% for url in r.owned_cited_urls %}<div><code>{{ url }}</code></div>{% endfor %}{% endif %}</td>
+  <td class="col-faith">{% for f in r.faithfulness %}<div>{{ faith_row_label(f) }}</div>{% else %}<span class="dim">–</span>{% endfor %}</td>
+  <td class="col-excerpt dim">{{ r.excerpt }}</td>
+  <td class="file"><a href="{{ r.file }}"><code>{{ r.file }}</code></a></td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+{% endif %}
+{% endfor %}
+
+{% if report.errors %}
+<h2>Failed calls</h2>
+<ul>
+{% for e in report.errors %}<li>{{ e.engine }} · question {{ e.query_index + 1 }} · run {{ e.repeat + 1 }}: {{ e.error_type }} — {{ e.message }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+<h2>Definitions</h2>
+<dl>
+{% for d in report.definitions %}<dt>{{ d.term }}</dt><dd>{{ d.text }}</dd>{% endfor %}
+</dl>
+
+<h2>Run</h2>
+<ul class="muted">
+  <li>Run <code>{{ report.run.run_id }}</code> · mode <code>{{ report.run.mode }}</code> · status <code>{{ report.run.status }}</code></li>
+  <li>Prompt set v{{ report.run.prompt_set.version }} <code>{{ report.run.prompt_set.hash }}</code></li>
+  <li>Started {{ report.run.started_at }} · finished {{ report.run.finished_at }}</li>
+  <li>answersnap {{ report.tool_version }} · faithfulness method <code>{{ report.faithfulness_instrument.method_version }}</code> · self-check {{ "passed" if report.faithfulness_instrument.passed else "FAILED" }}</li>
+</ul>
+</main>
+</body>
+</html>

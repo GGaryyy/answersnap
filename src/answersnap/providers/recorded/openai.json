@@ -1,0 +1,225 @@
+{
+  "platform": "openai",
+  "recorded_at": "2026-08-27T05:10:38.366290+00:00",
+  "query": "雙北植牙推薦的醫生或診所？",
+  "model": "gpt-5.1",
+  "payload": {
+    "id": "resp_07f2a7d919c86bb0006a8fc6bbbdb887d0b2428f1838e957ba",
+    "created_at": 1787807420.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": null,
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "ws_07f2a7d919c86bb0006a8fc6bcf7ec87d09020ebcf41d64041",
+        "action": {
+          "type": "search",
+          "queries": [
+            "[redacted text, 13 chars in the original]",
+            "[redacted text, 13 chars in the original]"
+          ],
+          "query": "[redacted text, 13 chars in the original]",
+          "sources": null
+        },
+        "status": "completed",
+        "type": "web_search_call"
+      },
+      {
+        "id": "msg_07f2a7d919c86bb0006a8fc6be92bc87d080129f72c517be95",
+        "content": [
+          {
+            "annotations": [
+              {
+                "end_index": 334,
+                "start_index": 220,
+                "title": "[redacted text, 18 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-1.example/page-1"
+              },
+              {
+                "end_index": 540,
+                "start_index": 426,
+                "title": "[redacted text, 18 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-1.example/page-1"
+              },
+              {
+                "end_index": 744,
+                "start_index": 630,
+                "title": "[redacted text, 18 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-1.example/page-1"
+              },
+              {
+                "end_index": 875,
+                "start_index": 800,
+                "title": "[redacted text, 31 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-2.example/page-2"
+              },
+              {
+                "end_index": 1076,
+                "start_index": 986,
+                "title": "[redacted text, 39 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-3.example/page-3"
+              },
+              {
+                "end_index": 1278,
+                "start_index": 1171,
+                "title": "[redacted text, 34 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-4.example/page-4"
+              },
+              {
+                "end_index": 1461,
+                "start_index": 1388,
+                "title": "[redacted text, 53 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-5.example/page-5"
+              },
+              {
+                "end_index": 1633,
+                "start_index": 1539,
+                "title": "[redacted text, 57 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-6.example/page-6"
+              },
+              {
+                "end_index": 1745,
+                "start_index": 1690,
+                "title": "[redacted text, 29 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-7.example/page-7"
+              },
+              {
+                "end_index": 1913,
+                "start_index": 1837,
+                "title": "[redacted text, 40 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-8.example/page-8"
+              },
+              {
+                "end_index": 2198,
+                "start_index": 2066,
+                "title": "[redacted text, 23 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-9.example/page-9"
+              },
+              {
+                "end_index": 2360,
+                "start_index": 2263,
+                "title": "[redacted text, 38 chars in the original]",
+                "type": "url_citation",
+                "url": "https://site-3.example/page-10"
+              }
+            ],
+            "text": "[redacted text, 2939 chars in the original]",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message",
+        "phase": null
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [
+      {
+        "type": "web_search",
+        "external_web_access": null,
+        "filters": null,
+        "search_context_size": "medium",
+        "user_location": {
+          "city": null,
+          "country": "US",
+          "region": null,
+          "timezone": null,
+          "type": "approximate"
+        },
+        "return_token_budget": "default",
+        "search_content_types": [
+          "text"
+        ]
+      }
+    ],
+    "top_p": 1.0,
+    "background": false,
+    "completed_at": 1787807437.0,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "moderation": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_options": null,
+    "prompt_cache_retention": "in_memory",
+    "reasoning": {
+      "context": "current_turn",
+      "effort": "none",
+      "generate_summary": null,
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 7464,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1700,
+      "output_tokens_details": {
+        "reasoning_tokens": 57
+      },
+      "total_tokens": 9164
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "frequency_penalty": 0.0,
+    "presence_penalty": 0.0,
+    "store": true,
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 1
+      }
+    }
+  },
+  "redacted": {
+    "method": "redact-1",
+    "note": "URLs, page titles and all readable text replaced; structure, indices and flags unchanged"
+  }
+}

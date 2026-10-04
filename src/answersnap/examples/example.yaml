@@ -1,0 +1,46 @@
+# answersnap config — edit this for your own brand.
+#
+# Everything here is fictional: the brand, the competitors and the .example
+# domains do not exist. `answersnap run --config <this file> --dry-run` answers
+# these exact questions from bundled fixtures, with no API calls, so you can
+# see a full report before spending anything.
+
+schema: 1
+
+brand:
+  name: Example Coffee Co.
+  # Every spelling an answer might use. A missing alias looks exactly like a
+  # brand the engine never names, so be generous.
+  aliases: ["Example Coffee", "ExampleCoffee"]
+  # Citations to these hosts count as citing you (subdomains included).
+  owned_domains: ["example-coffee.example"]
+
+competitors:
+  - name: Sample Roasters
+    aliases: []
+  - name: Demo Bean Co.
+    aliases: ["Demo Bean"]
+
+engines: [anthropic, openai, google]
+
+# Each question is asked this many times per engine. One answer is a coin
+# flip; the report shows a rate with its 95% interval instead.
+repeats: 3
+
+# Questions with these intents are where being named matters most. The report
+# counts "named in recommendation answers" over them.
+recommendation_intents: [recommendation]
+
+prompt_set:
+  # Bump the version whenever you change any question's text or intent.
+  # answersnap refuses to mix answers to different questions under one version.
+  version: 1
+  queries:
+    - text: "What's the best coffee subscription for someone getting into espresso?"
+      intent: recommendation
+    - text: "Which small-batch coffee roasters ship fresh beans nationwide?"
+      intent: recommendation
+    - text: "Is Example Coffee Co. worth the price compared to supermarket beans?"
+      intent: trust
+    - text: "How long do roasted coffee beans stay fresh?"
+      intent: how_to

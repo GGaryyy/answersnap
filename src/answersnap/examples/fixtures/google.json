@@ -9,83 +9,331 @@
       {
         "answer_text": "Sample Roasters and Demo Bean Co. are both well suited to beginners making espresso at home.",
         "citations": [
-          {"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-sample-roasters", "title": "sample-roasters.example",
-           "resolved_domain": "sample-roasters.example", "is_cited": true},
-          {"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-demo-bean", "title": "demo-bean.example",
-           "resolved_domain": "demo-bean.example", "is_cited": true}
-        ]
+          {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-sample-roasters",
+            "title": "sample-roasters.example",
+            "resolved_domain": "sample-roasters.example",
+            "is_cited": true
+          },
+          {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-demo-bean",
+            "title": "demo-bean.example",
+            "resolved_domain": "demo-bean.example",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "espresso coffee subscription for beginners"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 92,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 180,
+          "output_tokens": 210,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       },
       {
         "answer_text": "Sample Roasters is frequently recommended for espresso because its blends are consistent.",
         "citations": [
-          {"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-sample-roasters", "title": "sample-roasters.example",
-           "resolved_domain": "sample-roasters.example", "is_cited": true}
-        ]
+          {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-sample-roasters",
+            "title": "sample-roasters.example",
+            "resolved_domain": "sample-roasters.example",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "espresso coffee subscription for beginners"
+          },
+          {
+            "query": "best espresso beans subscription"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 89,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 480,
+          "output_tokens": 250,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       },
       {
         "answer_text": "Demo Bean Co. offers a flexible espresso subscription that you can pause any month.",
         "citations": [
-          {"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-demo-bean", "title": "demo-bean.example",
-           "resolved_domain": "demo-bean.example", "is_cited": true}
-        ]
+          {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-demo-bean",
+            "title": "demo-bean.example",
+            "resolved_domain": "demo-bean.example",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "espresso coffee subscription for beginners"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 83,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 780,
+          "output_tokens": 290,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       }
     ],
     "Which small-batch coffee roasters ship fresh beans nationwide?": [
       {
         "answer_text": "Demo Bean Co. and Sample Roasters both ship small-batch beans nationwide.",
         "citations": [
-          {"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-demo-bean", "title": "demo-bean.example",
-           "resolved_domain": "demo-bean.example", "is_cited": true}
-        ]
+          {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-demo-bean",
+            "title": "demo-bean.example",
+            "resolved_domain": "demo-bean.example",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "small batch coffee roasters ship nationwide"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 73,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 180,
+          "output_tokens": 210,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       },
       {
         "answer_text": "Look at Demo Bean Co., which roasts the day it ships.",
-        "citations": []
+        "citations": [],
+        "searches": [
+          {
+            "query": "small batch coffee roasters ship nationwide"
+          }
+        ],
+        "spans": [],
+        "usage": {
+          "input_tokens": 480,
+          "output_tokens": 250,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       },
       {
         "answer_text": "Sample Roasters roasts to order and ships to every state.",
         "citations": [
-          {"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-sample-roasters", "title": "sample-roasters.example",
-           "resolved_domain": "sample-roasters.example", "is_cited": true}
-        ]
+          {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-sample-roasters",
+            "title": "sample-roasters.example",
+            "resolved_domain": "sample-roasters.example",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "small batch coffee roasters ship nationwide"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 57,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 780,
+          "output_tokens": 290,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       }
     ],
     "Is Example Coffee Co. worth the price compared to supermarket beans?": [
       {
         "answer_text": "Example Coffee Co. is a premium roaster; whether it is worth it depends on how much you value freshness.",
         "citations": [
-          {"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-example-coffee", "title": "example-coffee.example",
-           "resolved_domain": "example-coffee.example", "is_cited": true}
-        ]
+          {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-example-coffee",
+            "title": "example-coffee.example",
+            "resolved_domain": "example-coffee.example",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "Example Coffee Co. review price"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 40,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 180,
+          "output_tokens": 210,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       },
       {
         "answer_text": "Supermarket beans are cheaper, but specialty roasters such as Example Coffee Co. sell fresher coffee.",
-        "citations": []
+        "citations": [],
+        "searches": [
+          {
+            "query": "Example Coffee Co. review price"
+          }
+        ],
+        "spans": [],
+        "usage": {
+          "input_tokens": 480,
+          "output_tokens": 250,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       },
       {
         "answer_text": "Example Coffee charges more, and reviews say the freshness justifies it for espresso drinkers.",
         "citations": [
-          {"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-reviews", "title": "reviews.example",
-           "resolved_domain": "reviews.example", "is_cited": true}
-        ]
+          {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-reviews",
+            "title": "reviews.example",
+            "resolved_domain": "reviews.example",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "Example Coffee Co. review price"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 94,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 780,
+          "output_tokens": 290,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       }
     ],
     "How long do roasted coffee beans stay fresh?": [
       {
         "answer_text": "Roasted whole beans are best used within two to four weeks.",
         "citations": [
-          {"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-guide", "title": "coffeeguide.example",
-           "resolved_domain": "coffeeguide.example", "is_cited": true}
-        ]
+          {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/fixture-guide",
+            "title": "coffeeguide.example",
+            "resolved_domain": "coffeeguide.example",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "how long roasted coffee beans stay fresh"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 59,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 180,
+          "output_tokens": 210,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       },
       {
         "answer_text": "About a month for whole beans stored airtight.",
-        "citations": []
+        "citations": [],
+        "searches": [
+          {
+            "query": "how long roasted coffee beans stay fresh"
+          }
+        ],
+        "spans": [],
+        "usage": {
+          "input_tokens": 480,
+          "output_tokens": 250,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       },
       {
         "answer_text": "Two to four weeks after the roast date is the usual guidance.",
-        "citations": []
+        "citations": [],
+        "searches": [
+          {
+            "query": "how long roasted coffee beans stay fresh"
+          }
+        ],
+        "spans": [],
+        "usage": {
+          "input_tokens": 780,
+          "output_tokens": 290,
+          "reasoning_tokens": 300,
+          "output_includes_reasoning": false
+        }
       }
     ]
-  }
+  },
+  "search_count_reported": false
 }

@@ -119,3 +119,42 @@ def test_runs_started_in_the_same_second_get_their_own_directories(tmp_path):
     second, second_id = store.new_run_dir(tmp_path, "Trellis", now=STAMP)
     assert first != second and second_id == f"{first_id}-2"
     assert not second.exists()
+
+
+# ---------------------------------------------------------------- record-2
+def test_only_answer_files_are_loaded_as_answers(tmp_path):
+    from builders import record
+    store.write_json(store.answer_path(tmp_path, "openai", 0, 0), record(engine="openai"))
+    store.write_raw_payload(store.raw_path(tmp_path, "openai", 0, 0), {"output": []})
+    (tmp_path / "answers/openai/q00_r1.json.tmp").write_text("{half")
+    (tmp_path / "answers/openai/notes.json").write_text("{}")
+    assert [r["_file"] for r in store.load_answers(tmp_path)] == ["answers/openai/q00_r0.json"]
+
+
+def test_an_answer_1_record_loads_with_every_new_field_unknown(tmp_path):
+    from builders import record
+    legacy = record(legacy=True)
+    legacy.pop("_file")
+    store.write_json(store.answer_path(tmp_path, "anthropic", 0, 0), legacy)
+    (loaded,) = store.load_answers(tmp_path)
+    assert loaded["schema"] == "answer-1"
+    for key in store.ANSWER_2_DEFAULTS:
+        assert loaded[key] is None, key
+
+
+def test_raw_payload_digest_is_of_the_bytes_on_disk(tmp_path):
+    import hashlib
+    path = store.raw_path(tmp_path, "google", 3, 1)
+    written = store.write_raw_payload(path, {"b": 1, "a": "值"})
+    assert path.name == "q03_r1.raw.json"
+    data = path.read_bytes()
+    assert written == {"sha256": "sha256:" + hashlib.sha256(data).hexdigest(), "bytes": len(data)}
+    assert "值" in data.decode("utf-8")
+
+
+def test_a_hundredth_question_is_still_an_answer(tmp_path):
+    from builders import record
+    path = store.answer_path(tmp_path, "openai", 100, 0)
+    assert path.name == "q100_r0.json"
+    store.write_json(path, record(engine="openai", query_index=100))
+    assert [r["query_index"] for r in store.load_answers(tmp_path)] == [100]

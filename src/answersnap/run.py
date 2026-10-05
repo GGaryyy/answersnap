@@ -15,9 +15,11 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from answersnap import __version__, store
+from answersnap import __version__, pricing, store
 from answersnap.config import config_hash, prompt_identity
-from answersnap.engines import COST_PER_CALL_USD, SKIPPED_NO_CREDENTIALS, SKIPPED_UNVERIFIED
+from answersnap.engines import SKIPPED_NO_CREDENTIALS, SKIPPED_UNVERIFIED, per_call_estimate_usd
+from answersnap.metrics.rates import is_placeholder
+from answersnap.metrics.usage import cost_totals, usage_totals
 from answersnap.providers import ProviderError
 
 # ---------------------------------------------------------------- constants
@@ -59,15 +61,15 @@ def plan_tasks(config, engine_names, repeats, done=frozenset()):
             if (engine, query_index, repeat) not in done]
 
 
-def estimate_cost(tasks):
+def estimate_cost(tasks, models=None):
     """{engine: (calls, usd or None)} in the order engines first appear.
-    None means no measurement exists."""
+    None means the engine's model has no list price."""
     calls = {}
     for task in tasks:
         calls[task.engine] = calls.get(task.engine, 0) + 1
     estimate = {}
     for engine, count in calls.items():
-        per_call = COST_PER_CALL_USD.get(engine)
+        per_call = per_call_estimate_usd(engine, (models or {}).get(engine))
         estimate[engine] = (count, None if per_call is None else round(count * per_call, 2))
     return estimate
 
@@ -89,7 +91,7 @@ def _engine_entry(name, engines, skipped):
 
 
 def initial_manifest(config, *, run_id, mode, engines, skipped, tasks, repeats,
-                     max_calls, started_at, cost):
+                     max_calls, started_at, cost, keep_raw=True):
     return {
         "run_id": run_id,
         "tool_version": __version__,
@@ -108,6 +110,8 @@ def initial_manifest(config, *, run_id, mode, engines, skipped, tasks, repeats,
         "calls": {"planned": 0, "made": 0, "failed": 0, "cap": max_calls,
                   "this_session": len(tasks)},
         "cost_estimate_usd": {name: usd for name, (_, usd) in cost.items()},
+        "record_schema": store.ANSWER_SCHEMA,
+        "raw_payloads": store.RAW_KEPT if keep_raw else store.RAW_NOT_KEPT,
         "faithfulness": {"status": "not_run"},
     }
 
@@ -122,14 +126,34 @@ class _Recorder:
         self._config = config
         self._version = config.prompt_set.version
         self._hash = prompt_identity(config)
+        self._keep_raw = manifest.get("raw_payloads", store.RAW_KEPT) == store.RAW_KEPT
         self._lock = threading.Lock()
+
+    def _raw(self, task, answer):
+        """Write the response before the record that points at it, so a record
+        never names a file that is not there."""
+        path = store.raw_path(self._run_dir, task.engine, task.query_index, task.repeat)
+        if answer.raw_payload is None:
+            return store.raw_fields(store.RAW_NOT_PROVIDED)
+        if not self._keep_raw:
+            path.unlink(missing_ok=True)  # an earlier attempt's, now not wanted
+            return store.raw_fields(store.RAW_NOT_KEPT)
+        written = store.write_raw_payload(path, answer.raw_payload)
+        return store.raw_fields(store.RAW_KEPT, path.relative_to(self._run_dir).as_posix(),
+                                written["sha256"], written["bytes"])
+
+    def _cost(self, answer):
+        if self._manifest.get("mode") == "dry_run":
+            return pricing.no_estimate(pricing.REASON_DRY_RUN)
+        return pricing.estimate_cost_usd(answer.platform, answer.model, answer.usage,
+                                         answer.search_count)
 
     def answered(self, task, answer):
         query = self._config.prompt_set.queries[task.query_index]
         record = store.answer_record(
             answer, run_id=self._manifest["run_id"], query_index=task.query_index,
             query=query, repeat=task.repeat, prompt_set_version=self._version,
-            prompt_set_hash=self._hash)
+            prompt_set_hash=self._hash, raw=self._raw(task, answer), cost=self._cost(answer))
         store.write_json(store.answer_path(self._run_dir, task.engine, task.query_index,
                                            task.repeat), record)
         error_file = store.error_path(self._run_dir, task.engine, task.query_index, task.repeat)
@@ -193,13 +217,27 @@ def execute(config, run_dir, manifest, engines, tasks, *, workers=DEFAULT_WORKER
     return manifest
 
 
-def _counts_on_disk(run_dir):
+def _counts_on_disk(records, run_dir):
     answered, failed = {}, {}
-    for record in store.load_answers(run_dir):
+    for record in records:
         answered.setdefault(record["engine"], []).append(record["model"])
     for record in store.load_errors(run_dir):
         failed[record["engine"]] = failed.get(record["engine"], 0) + 1
     return answered, failed
+
+
+def raw_status_on_disk(records):
+    """kept / not_kept / not_provided, or "mixed" when a resume changed --no-raw.
+    Taken from the records, because the manifest only knows this session's flag."""
+    statuses = {r.get("raw_status") for r in records} - {None}
+    if not statuses:
+        return None
+    return statuses.pop() if len(statuses) == 1 else "mixed"
+
+
+def _settle_usage(entry, records):
+    entry["usage"] = usage_totals(records)
+    entry["cost_from_usage_usd"] = cost_totals(records)
 
 
 def _settle_engine(entry, models, failed, per_engine):
@@ -226,10 +264,19 @@ def _run_status(engines):
 
 def settle(manifest, run_dir, finished_at=None):
     """Recount every engine and every call from the files on disk."""
-    answered, failed = _counts_on_disk(run_dir)
+    records = store.load_answers(run_dir)
+    answered, failed = _counts_on_disk(records, run_dir)
     per_engine = manifest["prompt_set"]["n_queries"] * manifest["repeats"]
+    answers = [r for r in records if not is_placeholder(r)]
     for name, entry in manifest["engines"].items():
         _settle_engine(entry, answered.get(name, []), failed.get(name, 0), per_engine)
+        # Per engine only: token counts and prices are not comparable across
+        # platforms, so no run-wide total is ever written.
+        _settle_usage(entry, [r for r in answers if r["engine"] == name])
+    manifest["raw_payloads_on_disk"] = raw_status_on_disk(records)
+    # A resumed answer-1 run holds both schemas; say so instead of hiding it.
+    manifest["record_schemas_on_disk"] = sorted({r.get("schema") for r in records
+                                                 if r.get("schema")})
     total_failed = sum(failed.values())
     manifest["calls"].update({
         "planned": sum(e["planned"] for e in manifest["engines"].values()),

@@ -19,6 +19,8 @@ def _environment():
                        faith_row_label=fmt.faith_row_label, yes_blank=fmt.yes_blank,
                        engine_status_text=fmt.engine_status_text,
                        missing_metric_text=fmt.missing_metric_text,
+                       searches_text=fmt.searches_text, usage_text=fmt.usage_text,
+                       spans_note=fmt.spans_note,
                        low_sample=fmt.LOW_SAMPLE_NOTE)
     return env
 

@@ -36,7 +36,23 @@ def citation(url, *, domain=None, is_cited=True, cited_text=None):
 
 
 def record(engine="anthropic", query_index=0, repeat=0, text="Trellis is great.",
-           intent="recommendation", citations=(), observable=True, params=None):
+           intent="recommendation", citations=(), observable=True, params=None,
+           legacy=False, **answer_2):
+    """An answer record; legacy=True gives a pure answer-1 record as v0.1 wrote it."""
+    document = _answer_1(engine, query_index, repeat, text, intent, citations, observable,
+                         params)
+    if legacy:
+        return document
+    return {**document, "schema": "answer-2", **{**ANSWER_2_EMPTY, **answer_2}}
+
+
+ANSWER_2_EMPTY = {"searches": None, "search_count": None, "spans": None, "spans_dropped": 0,
+                  "usage": None, "raw_status": "not_provided", "raw_file": None,
+                  "raw_sha256": None, "raw_bytes": None, "cost_estimate_usd": None,
+                  "cost_basis": {"kind": "none", "reason": "no_usage"}}
+
+
+def _answer_1(engine, query_index, repeat, text, intent, citations, observable, params):
     return {"schema": "answer-1", "run_id": "r", "engine": engine, "model": "m",
             "params": params or {}, "query_index": query_index,
             "query_text": f"question {query_index}", "intent": intent, "repeat": repeat,

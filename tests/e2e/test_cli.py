@@ -231,3 +231,48 @@ def test_subset_run_says_which_engines_were_not_asked(config_path, tmp_path, no_
     data = json.loads((_run_dir(out) / "report.json").read_text())
     assert data["run"]["status"] == "complete_subset"
     assert any(n.startswith("Not asked in this run: ChatGPT, Gemini") for n in data["notices"])
+
+
+def _live_anthropic(monkeypatch):
+    from fake_answers import (
+        FakeAnthropicClient,
+        FakeAnthropicResponse,
+        anthropic_citation,
+        anthropic_text_block,
+    )
+
+    from answersnap.providers.anthropic_provider import AnthropicProvider
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key-not-real")
+    response = FakeAnthropicResponse([
+        {"type": "server_tool_use", "id": "s1", "name": "web_search", "input": {"query": "q"}},
+        {"type": "web_search_tool_result", "tool_use_id": "s1", "caller": {"type": "direct"},
+         "content": [{"url": "https://example-coffee.example/x"}]},
+        anthropic_text_block("Example Coffee Co. is good.",
+                             [anthropic_citation("https://example-coffee.example/x")])])
+    response._payload["usage"] = {"input_tokens": 1000, "output_tokens": 100,
+                                  "server_tool_use": {"web_search_requests": 1}}
+    client = FakeAnthropicClient(response)
+    monkeypatch.setattr(AnthropicProvider, "_client_or_fail", lambda self: client)
+
+
+@pytest.mark.parametrize("no_raw", [False, True])
+def test_live_run_keeps_the_raw_response_unless_told_not_to(config_path, tmp_path, monkeypatch,
+                                                            no_raw):
+    _live_anthropic(monkeypatch)
+    out = tmp_path / "out"
+    args = ["run", "--config", str(config_path), "--out", str(out), "--engines", "anthropic",
+            "--yes", "--no-fetch", "--workers", "1"] + (["--no-raw"] if no_raw else [])
+    cli.main(args)
+    run_dir = _run_dir(out)
+    records = store.load_answers(run_dir)
+    raw_files = list(run_dir.glob("answers/anthropic/*.raw.json"))
+    assert len(raw_files) == (0 if no_raw else len(records))
+    first = records[0]
+    assert first["searches"] == [{"query": "q", "results_count": 1}]
+    assert first["spans"] == [{"start": 0, "end": 27, "citation_indexes": [0]}]
+    # (1000 * $2 + 100 * $10) / 1M + 1 search * $0.01
+    assert first["cost_estimate_usd"] == 0.013
+    assert first["raw_status"] == ("not_kept" if no_raw else "kept")
+    manifest = store.read_manifest(run_dir)
+    assert manifest["engines"]["anthropic"]["cost_from_usage_usd"]["answers_priced"] == len(records)

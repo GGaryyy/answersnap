@@ -43,7 +43,11 @@ code { font-size: 12px; word-break: break-all; }
 td.file code, td.file a { white-space: nowrap; word-break: normal; }
 .col-question { min-width: 200px; } .col-sentence { min-width: 240px; }
 .col-excerpt { min-width: 220px; max-width: 320px; font-size: 13px; }
-.col-faith { min-width: 200px; } .col-cited { min-width: 180px; }
+.col-faith { min-width: 200px; } .col-cited { min-width: 220px; }
+.col-searched { min-width: 180px; font-size: 13px; }
+.support { font-size: 13px; margin: 2px 0 6px; }
+details { margin-top: 6px; font-size: 13px; } summary { cursor: pointer; color: var(--muted); }
+details ul { margin: 4px 0 0; padding-left: 18px; }
 dl dt { font-weight: 600; margin-top: 10px; } dl dd { margin: 2px 0 0; color: var(--muted); }
 a { color: var(--brand); }
 </style>
@@ -81,7 +85,7 @@ a { color: var(--brand); }
 
 <h2>By engine</h2>
 <div class="scroll"><table>
-<thead><tr><th>Engine</th><th>Model</th><th>Mention</th><th>Named in rec. answers</th><th>Citation of owned domains</th><th>Faithfulness</th></tr></thead>
+<thead><tr><th>Engine</th><th>Model</th><th>Mention</th><th>Named in rec. answers</th><th>Citation of owned domains</th><th>Faithfulness</th><th>Usage</th></tr></thead>
 <tbody>
 {% for s in report.engines %}
 <tr>
@@ -93,6 +97,7 @@ a { color: var(--brand); }
   <td>{{ metric_text(s.metrics.citation) }}</td>
   {% else %}<td class="dim">–</td><td class="dim">–</td><td class="dim">–</td>{% endif %}
   <td>{{ faith_summary_text(s.faithfulness) }}</td>
+  <td>{{ usage_text(s, report.run.mode == "dry_run") }}</td>
 </tr>
 {% endfor %}
 </tbody></table></div>
@@ -117,19 +122,23 @@ a { color: var(--brand); }
 <p class="muted">{{ engine_status_text(s) }}</p>
 {% else %}
 <div class="scroll"><table>
-<thead><tr><th class="col-question">Question</th><th>Intent</th><th>Run</th><th class="col-sentence">Sentence naming the brand</th><th>Mentioned</th><th>Named in rec. answer</th><th class="col-cited">Owned citation</th><th class="col-faith">Faithfulness</th><th class="col-excerpt">Answer excerpt</th><th>File</th></tr></thead>
+<thead><tr><th class="col-question">Question</th><th>Intent</th><th>Run</th><th class="col-searched">Searched for</th><th class="col-sentence">Sentence naming the brand</th><th>Mentioned</th><th>Named in rec. answer</th><th class="col-cited">Owned citation</th><th class="col-faith">Faithfulness</th><th class="col-excerpt">Answer excerpt</th><th>File</th></tr></thead>
 <tbody>
 {% for r in rows %}
 <tr id="{{ r.id }}">
   <td class="col-question">{{ r.query_text }}</td>
   <td>{{ r.intent }}</td>
   <td>{{ r.repeat + 1 }}</td>
+  <td class="col-searched">{% if r.searches %}{{ searches_text(r) }}{% else %}<span class="dim">{{ searches_text(r) }}</span>{% endif %}</td>
   <td class="col-sentence">{% for text, is_brand in r.brand_segments %}{% if is_brand %}<mark>{{ text }}</mark>{% else %}{{ text }}{% endif %}{% endfor %}</td>
   <td>{% if r.mentioned %}<span class="yes">yes</span>{% endif %}</td>
   <td>{% if r.named_in_rec_answer is none %}<span class="dim" title="not a recommendation question">–</span>{% elif r.named_in_rec_answer %}<span class="yes">yes</span>{% endif %}</td>
-  <td class="col-cited">{% if not r.citations_observable %}<span class="dim">not observable</span>{% else %}{% for url in r.owned_cited_urls %}<div><code>{{ url }}</code></div>{% endfor %}{% endif %}</td>
+  <td class="col-cited">{% if not r.citations_observable %}<span class="dim">not observable</span>{% else %}{% for src in r.owned_cited_sources %}<div><code>{{ src.url }}</code></div>{% for x in src.excerpts %}<div class="support"><mark>{{ x.text }}</mark></div>{% endfor %}{% endfor %}{% endif %}</td>
   <td class="col-faith">{% for f in r.faithfulness %}<div>{{ faith_row_label(f) }}</div>{% else %}<span class="dim">–</span>{% endfor %}</td>
-  <td class="col-excerpt dim">{{ r.excerpt }}</td>
+  <td class="col-excerpt"><span class="dim">{{ r.excerpt }}</span>
+    {% if r.cited_sources %}<details><summary>All cited sources ({{ r.cited_sources | length }})</summary><ul>
+    {% for src in r.cited_sources %}<li><code>{{ src.domain }}</code>{% for x in src.excerpts %}<div class="support"><mark>{{ x.text }}</mark></div>{% endfor %}</li>{% endfor %}
+    </ul>{% if spans_note(r) %}<div class="dim">{{ spans_note(r) }}</div>{% endif %}</details>{% endif %}</td>
   <td class="file"><a href="{{ r.file }}"><code>{{ r.file }}</code></a></td>
 </tr>
 {% endfor %}
@@ -154,6 +163,7 @@ a { color: var(--brand); }
   <li>Run <code>{{ report.run.run_id }}</code> · mode <code>{{ report.run.mode }}</code> · status <code>{{ report.run.status }}</code></li>
   <li>Prompt set v{{ report.run.prompt_set.version }} <code>{{ report.run.prompt_set.hash }}</code></li>
   <li>Started {{ report.run.started_at }} · finished {{ report.run.finished_at }}</li>
+  <li>Answer records: {{ report.run.record_schemas_on_disk | join(", ") or "none" }} · raw API responses: {{ (report.run.raw_payloads or "not recorded") | replace("_", " ") }}</li>
   <li>answersnap {{ report.tool_version }} · faithfulness method <code>{{ report.faithfulness_instrument.method_version }}</code> · self-check {{ "passed" if report.faithfulness_instrument.passed else "FAILED" }}</li>
 </ul>
 </main>

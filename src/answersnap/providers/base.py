@@ -54,6 +54,22 @@ class RawCitation:
 
 
 @dataclass(frozen=True)
+class SearchQuery:
+    query: str
+    # How many results came back for this query, where the platform says.
+    results_count: int | None = None
+
+
+@dataclass(frozen=True)
+class AnswerSpan:
+    # Code-point offsets into answer_text, whatever unit the platform used.
+    start: int
+    end: int
+    # Indexes into ProviderAnswer.citations of the sources backing this span.
+    citation_indexes: tuple = ()
+
+
+@dataclass(frozen=True)
 class ProviderAnswer:
     platform: str
     model: str
@@ -71,6 +87,23 @@ class ProviderAnswer:
     # than read as a perfect one.
     retrieved_set_available: bool = False
     stop_reason: str | None = None
+    # None throughout means "the platform did not tell us", never "none".
+    searches: list[SearchQuery] | None = None
+    # The platform's own count of searches billed, which can differ from the
+    # queries it chose to show.
+    search_count: int | None = None
+    spans: list[AnswerSpan] | None = None
+    # Spans the platform sent that could not be placed in the answer text.
+    spans_dropped: int = 0
+    usage: dict | None = None
+    raw_payload: dict | None = field(default=None, compare=False, repr=False)
+
+
+def to_payload(response):
+    """Serialise an SDK response so parsing runs on plain data."""
+    if hasattr(response, "model_dump"):
+        return response.model_dump(mode="json")
+    return response
 
 
 class ProviderError(RuntimeError):

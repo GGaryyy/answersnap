@@ -8,60 +8,335 @@
     "What's the best coffee subscription for someone getting into espresso?": [
       {
         "answer_text": "Sample Roasters is a popular choice for espresso: its dark blends are forgiving while you learn to dial in.",
-        "citations": [{"url": "https://sample-roasters.example/subscriptions", "title": "Sample Roasters subscriptions", "is_cited": true}]
+        "citations": [
+          {
+            "url": "https://sample-roasters.example/subscriptions",
+            "title": "Sample Roasters subscriptions",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "espresso coffee subscription for beginners"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 107,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 6900,
+          "output_tokens": 540,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       },
       {
         "answer_text": "Example Coffee Co.'s Espresso Starter plan is designed for beginners and ships every two weeks.",
-        "citations": [{"url": "https://example-coffee.example/espresso-starter", "title": "Espresso Starter plan", "is_cited": true}]
+        "citations": [
+          {
+            "url": "https://example-coffee.example/espresso-starter",
+            "title": "Espresso Starter plan",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "espresso coffee subscription for beginners"
+          },
+          {
+            "query": "best espresso beans subscription"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 95,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 7200,
+          "output_tokens": 580,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       },
       {
         "answer_text": "Consider Demo Bean Co. for flexibility, or Sample Roasters if you like dark roasts.",
-        "citations": [{"url": "https://demo-bean.example/plans", "title": "Demo Bean plans", "is_cited": true}]
+        "citations": [
+          {
+            "url": "https://demo-bean.example/plans",
+            "title": "Demo Bean plans",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "espresso coffee subscription for beginners"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 83,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 7500,
+          "output_tokens": 620,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       }
     ],
     "Which small-batch coffee roasters ship fresh beans nationwide?": [
       {
         "answer_text": "Demo Bean Co. and Example Coffee Co. both roast in small batches and ship across the country.",
         "citations": [
-          {"url": "https://demo-bean.example/plans", "title": "Demo Bean plans", "is_cited": true},
-          {"url": "https://example-coffee.example/shipping", "title": "Shipping", "is_cited": true}
-        ]
+          {
+            "url": "https://demo-bean.example/plans",
+            "title": "Demo Bean plans",
+            "is_cited": true
+          },
+          {
+            "url": "https://example-coffee.example/shipping",
+            "title": "Shipping",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "small batch coffee roasters ship nationwide"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 93,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 6900,
+          "output_tokens": 540,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       },
       {
         "answer_text": "Demo Bean Co. is a well-reviewed small-batch roaster that ships nationwide.",
-        "citations": [{"url": "https://demo-bean.example/plans", "title": "Demo Bean plans", "is_cited": true}]
+        "citations": [
+          {
+            "url": "https://demo-bean.example/plans",
+            "title": "Demo Bean plans",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "small batch coffee roasters ship nationwide"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 75,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 7200,
+          "output_tokens": 580,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       },
       {
         "answer_text": "Sample Roasters ships nationwide and roasts to order.",
-        "citations": []
+        "citations": [],
+        "searches": [
+          {
+            "query": "small batch coffee roasters ship nationwide"
+          }
+        ],
+        "spans": [],
+        "usage": {
+          "input_tokens": 7500,
+          "output_tokens": 620,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       }
     ],
     "Is Example Coffee Co. worth the price compared to supermarket beans?": [
       {
         "answer_text": "Example Coffee Co. is pricier, but the beans are roasted to order, so they are much fresher than supermarket coffee.",
-        "citations": [{"url": "https://reviews.example/example-coffee", "title": "Review", "is_cited": true}]
+        "citations": [
+          {
+            "url": "https://reviews.example/example-coffee",
+            "title": "Review",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "Example Coffee Co. review price"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 116,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 6900,
+          "output_tokens": 540,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       },
       {
         "answer_text": "For espresso, Example Coffee Co. is generally considered worth the premium.",
-        "citations": []
+        "citations": [],
+        "searches": [
+          {
+            "query": "Example Coffee Co. review price"
+          }
+        ],
+        "spans": [],
+        "usage": {
+          "input_tokens": 7200,
+          "output_tokens": 580,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       },
       {
         "answer_text": "Many reviewers say Example Coffee is worth it for freshness, though budget drinkers may not notice the difference.",
-        "citations": [{"url": "https://reviews.example/example-coffee", "title": "Review", "is_cited": true}]
+        "citations": [
+          {
+            "url": "https://reviews.example/example-coffee",
+            "title": "Review",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "Example Coffee Co. review price"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 114,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 7500,
+          "output_tokens": 620,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       }
     ],
     "How long do roasted coffee beans stay fresh?": [
       {
         "answer_text": "Whole beans stay fresh for about two to four weeks after roasting.",
-        "citations": [{"url": "https://coffeeguide.example/freshness", "title": "Bean freshness", "is_cited": true}]
+        "citations": [
+          {
+            "url": "https://coffeeguide.example/freshness",
+            "title": "Bean freshness",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "how long roasted coffee beans stay fresh"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 66,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 6900,
+          "output_tokens": 540,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       },
       {
         "answer_text": "Use whole beans within about a month of the roast date for best flavour.",
-        "citations": []
+        "citations": [],
+        "searches": [
+          {
+            "query": "how long roasted coffee beans stay fresh"
+          }
+        ],
+        "spans": [],
+        "usage": {
+          "input_tokens": 7200,
+          "output_tokens": 580,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       },
       {
         "answer_text": "Two to four weeks for whole beans; ground coffee loses aroma within days.",
-        "citations": [{"url": "https://coffeeguide.example/freshness", "title": "Bean freshness", "is_cited": true}]
+        "citations": [
+          {
+            "url": "https://coffeeguide.example/freshness",
+            "title": "Bean freshness",
+            "is_cited": true
+          }
+        ],
+        "searches": [
+          {
+            "query": "how long roasted coffee beans stay fresh"
+          }
+        ],
+        "spans": [
+          {
+            "start": 0,
+            "end": 34,
+            "citation_indexes": [
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 7500,
+          "output_tokens": 620,
+          "reasoning_tokens": 40,
+          "output_includes_reasoning": true
+        }
       }
     ]
   }

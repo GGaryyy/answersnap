@@ -40,7 +40,7 @@ def is_placeholder(record):
     return bool((record.get("params") or {}).get("no_fixture"))
 
 
-def _owned(domain, owned_domains):
+def is_owned(domain, owned_domains):
     host = strip_www((domain or "").lower())
     return any(host == owned or host.endswith("." + owned) for owned in owned_domains)
 
@@ -51,7 +51,7 @@ def _citation_view(record, owned_domains):
     if not record.get("cited_sources_available"):
         return False, []
     owned = [c["url"] for c in record.get("citations", [])
-             if c.get("is_cited") and _owned(c.get("domain"), owned_domains)]
+             if c.get("is_cited") and is_owned(c.get("domain"), owned_domains)]
     return True, owned
 
 

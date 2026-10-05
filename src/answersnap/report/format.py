@@ -106,3 +106,63 @@ def missing_metric_text(section):
     if section["status"] in ("ok", "partial"):
         return NO_MEASURABLE_ANSWERS
     return engine_status_text(section)
+
+
+def searches_text(row):
+    """What the engine searched for, or why there is nothing to show."""
+    searches = row.get("searches")
+    if searches is None:
+        return "not recorded"
+    if row.get("search_ran") is False and not searches:
+        return "not searched"
+    if not searches:
+        return "no query recorded"
+    text = " · ".join(s["query"] for s in searches)
+    count = row.get("search_count")
+    if count is not None and count != len(searches):
+        text += f" ({count} searches reported)"
+    return text
+
+
+def _tokens(usage):
+    text = f"{usage['input_tokens']:,} in" if usage["input_tokens"] is not None else ""
+    if usage["output_tokens"] is not None:
+        text += f" · {usage['output_tokens']:,} out"
+    if usage["reasoning_tokens"]:
+        text += f" · {usage['reasoning_tokens']:,} reasoning"
+    return text.strip(" ·")
+
+
+def cost_text(cost, dry_run):
+    if dry_run:
+        return "no cost (dry run)"
+    if cost["usd"] is None:
+        return "no estimate"
+    text = f"≈ ${cost['usd']:.2f} ({cost['basis']})"
+    if cost["answers_unpriced"]:
+        text += f", {cost['answers_unpriced']} answers not priced"
+    return text
+
+
+def usage_text(section, dry_run):
+    """One engine's tokens, searches and estimated cost. Never across engines."""
+    usage, cost = section.get("usage"), section.get("cost")
+    if not usage or not usage["with_usage"]:
+        return "usage not recorded"
+    parts = [_tokens(usage)]
+    if usage["search_count"] is not None:
+        parts.append(f"{usage['search_count']:,} searches")
+    parts.append(cost_text(cost, dry_run))
+    text = " · ".join(p for p in parts if p)
+    if usage["with_usage"] < usage["answers"]:
+        text = f"tokens recorded for {usage['with_usage']} of {usage['answers']} answers: " + text
+    return text
+
+
+def spans_note(row):
+    """Shown when a row's cited sources cannot carry sentence excerpts."""
+    if row["spans_status"] == "not_recorded":
+        return "spans not recorded"
+    if row.get("spans_dropped"):
+        return f"{row['spans_dropped']} spans could not be placed"
+    return ""

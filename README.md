@@ -45,6 +45,8 @@ answersnap doctor --config answersnap.yaml
 answersnap run --config answersnap.yaml          # prints the plan and an estimate, then asks before spending
 ```
 
+The estimate before a run prices one typical recorded call per engine at list price. After a run, each answer is priced from its own reported token usage at the list prices in `pricing.py`, dated in the report. It is an estimate, not a bill: discounts, free allowances and price changes are not reflected, and a model without a listed price gets no estimate.
+
 Useful flags:
 
 | Flag | What it does |
@@ -53,6 +55,7 @@ Useful flags:
 | `--engines anthropic,openai` | Runs a subset of engines |
 | `--resume RUN_DIR` | Fills in an interrupted run |
 | `--no-fetch` | Skips fetching cited pages |
+| `--no-raw` | Does not keep each full API response (`q00_r0.raw.json`) |
 | `--yes` | Skips the confirmation prompt (for scripts) |
 
 Rebuild a report from its directory at any time:
@@ -68,11 +71,18 @@ The report is built only from the run directory. Editing your config afterwards 
 ```
 manifest.json          models, dates, prompt-set version + hash, calls planned/made/failed
 config.frozen.json     the config as it was when the run started
-answers/<engine>/q00_r0.json        raw answer text and citations
+answers/<engine>/q00_r0.json        answer text, citations, search queries, cited spans, token usage
+answers/<engine>/q00_r0.raw.json    the full API response as the SDK returned it (skipped with --no-raw)
 answers/<engine>/q00_r0.error.json  a failed call, kept, not hidden
 fetched/<hash>.json    cited pages as fetched, for the faithfulness check
 report.json / report.md / report.html
 ```
+
+The raw file is the SDK's JSON form of the response, written with sorted keys. It is not the bytes on the wire. Each answer record names its raw file with a SHA-256 digest, so you can confirm the file has not changed since the run. The parsed record is enough to rebuild the report. The raw response is what lets you re-check the parsing, or extract something new from an old run later. Raw files run to tens of KB per answer.
+
+**Keep run directories private.** They hold full engine output and passages quoted from the pages the engines cited. Do not commit them to a public repository or publish them.
+
+Directories from v0.1 (`answer-1` records) still report. Fields they never captured show as "not recorded", and a resumed v0.1 run lists both record schemas in the report.
 
 ## Measurement rules
 
@@ -87,11 +97,11 @@ report.json / report.md / report.html
 
 ## Engines
 
-| Engine | Model (consumer default) | Citations | Quoted text |
-|---|---|---|---|
-| Claude (`anthropic`) | claude-sonnet-5 | yes | yes |
-| ChatGPT (`openai`) | gpt-5.1 | yes | no |
-| Gemini (`google`) | gemini-3.7-flash | yes (resolved from redirects) | no |
+| Engine | Model (consumer default) | Citations | Quoted text | Search queries | Cited spans | Token usage |
+|---|---|---|---|---|---|---|
+| Claude (`anthropic`) | claude-sonnet-5 | yes | yes | yes, with result counts | whole cited passages | yes, plus billed search count |
+| ChatGPT (`openai`) | gpt-5.1 | yes | no | yes | character ranges | yes, plus billed search count |
+| Gemini (`google`) | gemini-3.7-flash | yes (resolved from redirects) | no | yes | byte ranges, converted and checked against the quoted segment | yes; no search count |
 
 An engine is only allowed to produce data after its parser has handled a real recorded response. See `answersnap verify-providers`. Adapters for Perplexity and xAI exist but are not enabled yet, because they have not passed this check.
 
@@ -99,7 +109,7 @@ An engine is only allowed to produce data after its parser has handled a real re
 
 - One snapshot per run. Comparing two snapshots is planned; until then, use the intervals: a change smaller than them is not a change.
 - The unknown-entity patterns in `metrics/mention.py` are tuned for one category and are not used by the CLI yet.
-- Cost estimates exist only for Anthropic (≈ $0.17 per call, one measurement). The other engines print "no estimate".
+- Cost figures are list-price estimates, not bills. Gemini reports no search count, so its search charges are not included. A model without a listed price gets no estimate.
 
 ## License
 

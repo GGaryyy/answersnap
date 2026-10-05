@@ -6,10 +6,12 @@ from answersnap.providers import (  # noqa: F401  (importing registers each adap
     xai_provider,
 )
 from answersnap.providers.base import (
+    AnswerSpan,
     Provider,
     ProviderAnswer,
     ProviderError,
     RawCitation,
+    SearchQuery,
     get_provider,
     get_provider_class,
     registered_platforms,
@@ -17,6 +19,6 @@ from answersnap.providers.base import (
 )
 
 __all__ = [
-    "Provider", "ProviderAnswer", "ProviderError", "RawCitation",
+    "AnswerSpan", "Provider", "ProviderAnswer", "ProviderError", "RawCitation", "SearchQuery",
     "get_provider", "get_provider_class", "registered_platforms", "verified_platforms",
 ]

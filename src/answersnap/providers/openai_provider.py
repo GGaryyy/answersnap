@@ -8,7 +8,16 @@ shape that has never been observed must not produce data.
 import os
 from datetime import datetime, timezone
 
-from answersnap.providers.base import Provider, ProviderAnswer, ProviderError, RawCitation, register
+from answersnap.providers.base import (
+    Provider,
+    ProviderAnswer,
+    ProviderError,
+    RawCitation,
+    SearchQuery,
+    register,
+    to_payload,
+)
+from answersnap.providers.spans import usage_summary, valid_spans
 
 # Consumer-default tier, not the flagship.
 DEFAULT_MODEL = "gpt-5.1"
@@ -21,27 +30,82 @@ def _output_items(payload):
     return [i for i in items if isinstance(i, dict)] if isinstance(items, list) else []
 
 
-def _text_parts(items):
-    parts = []
+def _chunks(items):
+    """(base offset, chunk) for every output_text chunk, in answer order.
+
+    Annotation offsets count from the start of their own chunk, so text and
+    annotations are read from this one iteration: two separate walks could
+    disagree on which chunks count, and every offset would drift.
+    """
+    base = 0
     for item in items:
         if item.get("type") != "message":
             continue
         for chunk in item.get("content") or []:
             if isinstance(chunk, dict) and chunk.get("type") == "output_text":
-                parts.append(chunk.get("text") or "")
-    return parts
+                yield base, chunk
+                base += len(chunk.get("text") or "")
 
 
-def _annotations(items):
-    for item in items:
-        if item.get("type") != "message":
-            continue
-        for chunk in item.get("content") or []:
-            if not isinstance(chunk, dict):
+def _cited_and_spans(chunks):
+    """(cited sources, {(start, end): [citation index]}, annotations not placeable)."""
+    cited, index_by_url, ranges, unplaced = [], {}, {}, 0
+    for base, chunk in chunks:
+        for annotation in chunk.get("annotations") or []:
+            if not isinstance(annotation, dict) or annotation.get("type") != "url_citation":
                 continue
-            for annotation in chunk.get("annotations") or []:
-                if isinstance(annotation, dict):
-                    yield chunk, annotation
+            url = annotation.get("url")
+            if not url:
+                continue
+            if url not in index_by_url:
+                index_by_url[url] = len(cited)
+                cited.append(RawCitation(url=url, title=annotation.get("title"),
+                                         position=len(cited), is_cited=True))
+            start, end = annotation.get("start_index"), annotation.get("end_index")
+            if not (_is_offset(start) and _is_offset(end)):
+                unplaced += 1
+                continue
+            # Several sources backing the same range become one span.
+            ranges.setdefault((base + start, base + end), []).append(index_by_url[url])
+    return cited, ranges, unplaced
+
+
+def _is_offset(value):
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _searches(items):
+    searches = []
+    for item in items:
+        if item.get("type") != "web_search_call":
+            continue
+        action = item.get("action") or {}
+        if action.get("type") not in (None, "search"):
+            continue
+        queries = action.get("queries")
+        if not isinstance(queries, list):
+            queries = [action.get("query")]
+        searches.extend(SearchQuery(query=q) for q in queries if isinstance(q, str))
+    return searches
+
+
+def _dict(value):
+    return value if isinstance(value, dict) else {}
+
+
+def _usage(payload):
+    usage = payload.get("usage")
+    tool_usage = _dict(_dict(payload.get("tool_usage")).get("web_search"))
+    search_count = tool_usage.get("num_requests")
+    search_count = search_count if isinstance(search_count, int) else None
+    if not isinstance(usage, dict):
+        return None, search_count
+    details = _dict(usage.get("output_tokens_details"))
+    # reasoning_tokens are billed as output and already inside output_tokens.
+    summary = usage_summary(usage.get("input_tokens"), usage.get("output_tokens"),
+                            details.get("reasoning_tokens"), usage.get("total_tokens"),
+                            True, usage)
+    return summary, search_count
 
 
 @register
@@ -94,18 +158,10 @@ class OpenAIProvider(Provider):
 
     def parse(self, payload, requested_at, observed_at):
         items = _output_items(payload)
-        text = "".join(_text_parts(items))
-
-        cited, seen = [], set()
-        for _, annotation in _annotations(items):
-            if annotation.get("type") != "url_citation":
-                continue
-            url = annotation.get("url")
-            if not url or url in seen:
-                continue
-            seen.add(url)
-            cited.append(RawCitation(url=url, title=annotation.get("title"),
-                                     position=len(cited), is_cited=True))
+        chunks = list(_chunks(items))
+        text = "".join(chunk.get("text") or "" for _, chunk in chunks)
+        cited, ranges, unplaced = _cited_and_spans(chunks)
+        usage, search_count = _usage(payload)
 
         # The Responses API reports citations as annotations on the message.
         # A search call with no annotation channel means we could not observe
@@ -114,6 +170,10 @@ class OpenAIProvider(Provider):
         channel_present = any(isinstance(chunk, dict) and "annotations" in chunk
                               for item in items if item.get("type") == "message"
                               for chunk in item.get("content") or [])
+        spans, dropped = (valid_spans([(s, e, i) for (s, e), i in ranges.items()],
+                                      len(text), [True] * len(cited))
+                          if channel_present else (None, 0))
+        dropped += unplaced if channel_present else 0
         return ProviderAnswer(
             platform=self.platform,
             model=payload.get("model") or self._cfg("_model", DEFAULT_MODEL),
@@ -134,6 +194,12 @@ class OpenAIProvider(Provider):
             # "the brand was not mentioned" if we lose that.
             stop_reason=((payload.get("incomplete_details") or {}).get("reason")
                          or payload.get("status")),
+            searches=_searches(items),
+            search_count=search_count,
+            spans=spans,
+            spans_dropped=dropped,
+            usage=usage,
+            raw_payload=payload,
         )
 
     def ask(self, query_text):
@@ -145,5 +211,4 @@ class OpenAIProvider(Provider):
             response = client.responses.create(**self.request_body(query_text))
         except openai.OpenAIError as exc:
             raise ProviderError(f"openai request failed: {type(exc).__name__}") from exc
-        payload = response.model_dump(mode="json") if hasattr(response, "model_dump") else response
-        return self.parse(payload, requested_at, datetime.now(timezone.utc))
+        return self.parse(to_payload(response), requested_at, datetime.now(timezone.utc))

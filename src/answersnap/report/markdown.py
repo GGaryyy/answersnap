@@ -10,6 +10,9 @@ from answersnap.report.format import (
     faith_summary_text,
     metric_text,
     missing_metric_text,
+    searches_text,
+    spans_note,
+    usage_text,
     yes_blank,
 )
 
@@ -34,10 +37,18 @@ def _sentence(row):
                    for t, brand in row["brand_segments"])
 
 
+def _code(text):
+    return f"`{(text or '').replace('`', '')}`"
+
+
+def _supported(source):
+    return "".join(f" — “{_inline(x['text'])}”" for x in source["excerpts"])
+
+
 def _cited(row):
     if not row["citations_observable"]:
         return "not observable"
-    return ", ".join(f"`{url.replace('`', '')}`" for url in row["owned_cited_urls"])
+    return "; ".join(_code(s["url"]) + _supported(s) for s in row["owned_cited_sources"])
 
 
 def _headline(report):
@@ -56,14 +67,16 @@ def _headline(report):
 
 def _engine_table(report):
     lines = ["", "## By engine", "",
-             "| Engine | Model | Mention | Named in rec. answers | Citation | Faithfulness |",
-             "|---|---|---|---|---|---|"]
+             "| Engine | Model | Mention | Named in rec. answers | Citation | Faithfulness | Usage |",
+             "|---|---|---|---|---|---|---|"]
+    dry_run = report["run"]["mode"] == "dry_run"
     for section in report["engines"]:
         m = section["metrics"] or {}
         lines.append(" | ".join([
             f"| {section['label']}", _cell(engine_status_text(section)),
             metric_text(m.get("mention")), metric_text(m.get("named_in_rec_answers")),
-            metric_text(m.get("citation")), _cell(faith_summary_text(section["faithfulness"]))])
+            metric_text(m.get("citation")), _cell(faith_summary_text(section["faithfulness"])),
+            _cell(usage_text(section, dry_run))])
             + " |")
     return lines
 
@@ -89,18 +102,32 @@ def _evidence(report):
         if not rows:
             continue
         lines += [f"### {section['label']}", "",
-                  "| Question | Intent | Run | Sentence naming the brand | Mentioned | "
-                  "Named in rec. answer | Owned citation | Faithfulness | File |",
-                  "|---|---|---|---|---|---|---|---|---|"]
+                  "| Question | Intent | Run | Searched for | Sentence naming the brand | "
+                  "Mentioned | Named in rec. answer | Owned citation | Faithfulness | File |",
+                  "|---|---|---|---|---|---|---|---|---|---|"]
         for row in rows:
             faith = "; ".join(faith_row_label(f) for f in row["faithfulness"]) or "–"
             lines.append("| " + " | ".join([
                 _cell(row["query_text"]), _cell(row["intent"]), str(row["repeat"] + 1),
-                _sentence(row), yes_blank(row["mentioned"]),
+                _cell(searches_text(row)), _sentence(row), yes_blank(row["mentioned"]),
                 yes_blank(row["named_in_rec_answer"]), _cited(row), _cell(faith),
                 f"`{row['file']}`"]) + " |")
-        lines.append("")
+        lines += [""] + _sources(rows)
     return lines
+
+
+def _sources(rows):
+    """Every cited source per answer, with the parts it was said to support."""
+    lines = []
+    for row in rows:
+        if not row["cited_sources"]:
+            continue
+        lines.append(f"- Question {row['query_index'] + 1}, run {row['repeat'] + 1}: "
+                     f"all cited sources ({len(row['cited_sources'])})"
+                     + (f" · {spans_note(row)}" if spans_note(row) else ""))
+        for source in row["cited_sources"]:
+            lines.append(f"  - {_code(source['domain'])}{_supported(source)}")
+    return lines + ([""] if lines else [])
 
 
 def _footer(report):
@@ -113,6 +140,8 @@ def _footer(report):
               f"- Prompt set v{run['prompt_set']['version']} `{run['prompt_set']['hash']}` · "
               f"{run['prompt_set']['n_queries']} questions × {run['repeats']} runs",
               f"- Started {run['started_at']} · finished {run['finished_at']}",
+              f"- Answer records: {', '.join(run['record_schemas_on_disk']) or 'none'} · "
+              f"raw API responses: {(run['raw_payloads'] or 'not recorded').replace('_', ' ')}",
               f"- answersnap {report['tool_version']} · faithfulness method "
               f"`{instrument['method_version']}` · self-check "
               f"{'passed' if instrument['passed'] else 'FAILED'}"]

@@ -130,7 +130,7 @@ def cmd_run(args):
     capped = args.max_calls is not None and len(tasks) > args.max_calls
     if capped:
         tasks = tasks[:args.max_calls]
-    cost = run.estimate_cost(tasks)
+    cost = run.estimate_cost(tasks, {name: engine.model for name, engine in engines.items()})
     _print_plan(tasks, cost, skipped, args.dry_run)
     if capped:
         _say(f"  capped at --max-calls {args.max_calls}; the run will be marked incomplete")
@@ -140,7 +140,7 @@ def cmd_run(args):
     manifest = run.initial_manifest(
         config, run_id=run_id, mode="dry_run" if args.dry_run else "live", engines=engines,
         skipped=skipped, tasks=tasks, repeats=repeats, max_calls=args.max_calls,
-        started_at=started, cost=cost)
+        started_at=started, cost=cost, keep_raw=not args.no_raw)
     store.write_frozen_config(run_dir, config.to_dict())
     store.write_manifest(run_dir, manifest)
     try:
@@ -229,6 +229,8 @@ def build_parser():
                    help="answer from bundled fictional fixtures: no API calls, no cost")
     p.add_argument("--no-fetch", action="store_true",
                    help="skip fetching cited pages (faithfulness is then not checked)")
+    p.add_argument("--no-raw", action="store_true",
+                   help="do not keep each API response as received (q00_r0.raw.json)")
     p.add_argument("--yes", action="store_true", help="do not ask before spending")
     p.set_defaults(handler=cmd_run)
 

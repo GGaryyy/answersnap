@@ -130,3 +130,27 @@ def test_package_holds_no_credentials():
         if path.is_file() and path.suffix in (".py", ".json", ".yaml", ".j2", ".html"):
             text = path.read_text(encoding="utf-8", errors="ignore")
             assert not any(p in text for p in patterns), path
+
+
+def _hostile_record_2_report():
+    config = make_config(brand={"name": "Trellis", "owned_domains": ["trellis.example"]})
+    text = f"Trellis {PAYLOAD} is fine."
+    hostile = record(text=text, citations=[citation("https://trellis.example/a")],
+                     searches=[{"query": PAYLOAD, "results_count": 1}], search_count=1,
+                     spans=[{"start": 0, "end": len(text), "citation_indexes": [0]}])
+    return build_report(_manifest(), config, [hostile], [], {}, {"method_version": "m",
+                        "passed": True, "controls": []}, generated_at=STAMP)
+
+
+def test_search_queries_and_span_excerpts_are_escaped_in_html():
+    report = _hostile_record_2_report()
+    assert report["rows"][0]["owned_cited_sources"][0]["excerpts"]
+    html = render_html(report)
+    assert "<script>alert" not in html and "<img src=x" not in html
+    assert "<mark>Trellis &lt;script&gt;" in html
+
+
+def test_search_queries_and_span_excerpts_are_inert_in_markdown():
+    markdown = render_markdown(_hostile_record_2_report())
+    assert "<script>" not in markdown and "<img" not in markdown
+    assert "&lt;script&gt;" in markdown

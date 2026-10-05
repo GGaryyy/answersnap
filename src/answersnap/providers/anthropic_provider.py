@@ -3,7 +3,16 @@ from datetime import datetime, timezone
 
 import anthropic
 
-from answersnap.providers.base import Provider, ProviderAnswer, ProviderError, RawCitation, register
+from answersnap.providers.base import (
+    Provider,
+    ProviderAnswer,
+    ProviderError,
+    RawCitation,
+    SearchQuery,
+    register,
+    to_payload,
+)
+from answersnap.providers.spans import usage_summary, valid_spans
 
 # Consumer-default tier, not the flagship: we measure the world most people see.
 # This is a measurement decision, not a cost decision — if the consumer default
@@ -22,13 +31,6 @@ WEB_SEARCH_TOOL = {"type": "web_search_20260209", "name": "web_search",
 MAX_RETRIES = 5
 
 
-def to_payload(response):
-    """Serialise an SDK response so parsing runs on plain data."""
-    if hasattr(response, "model_dump"):
-        return response.model_dump(mode="json")
-    return response
-
-
 def _cited_sources(blocks):
     """URLs the answer actually cites, in the order they appear in the answer."""
     cited, seen = [], set()
@@ -43,7 +45,64 @@ def _cited_sources(blocks):
             cited.append(RawCitation(url=url, title=citation.get("title"),
                                      position=len(cited), is_cited=True,
                                      cited_text=citation.get("cited_text")))
-    return cited, seen
+    return cited, {c.url: i for i, c in enumerate(cited)}
+
+
+def _searches(blocks):
+    """Queries the model sent, each with the result count of its result block."""
+    results = {b.get("tool_use_id"): b.get("content") for b in blocks
+               if b.get("type") == "web_search_tool_result"}
+    searches = []
+    for block in blocks:
+        if block.get("type") != "server_tool_use" or block.get("name") != "web_search":
+            continue
+        query = (block.get("input") or {}).get("query")
+        if not isinstance(query, str):
+            continue
+        found = results.get(block.get("id"))
+        searches.append(SearchQuery(
+            query=query, results_count=len(found) if isinstance(found, list) else None))
+    return searches
+
+
+def _spans(blocks, index_by_url, cited_flags):
+    """Each cited text block is one span; its offset is the text before it.
+
+    The API gives no offsets, but the answer text is exactly the text blocks
+    joined in order, so the cumulative length places every block.
+    """
+    if not any(b.get("type") == "text" and isinstance(b.get("citations"), list)
+               for b in blocks):
+        return None, 0
+    candidates, offset = [], 0
+    for block in blocks:
+        if block.get("type") != "text":
+            continue
+        length = len(block.get("text") or "")
+        citations = block.get("citations")
+        if isinstance(citations, list) and citations:
+            indexes = [index_by_url.get((c or {}).get("url")) for c in citations
+                       if isinstance(c, dict)]
+            candidates.append((offset, offset + length, indexes))
+        offset += length
+    return valid_spans(candidates, offset, cited_flags)
+
+
+def _dict(value):
+    return value if isinstance(value, dict) else {}
+
+
+def _usage(payload):
+    usage = payload.get("usage")
+    if not isinstance(usage, dict):
+        return None, None
+    details = _dict(usage.get("output_tokens_details"))
+    server = _dict(usage.get("server_tool_use"))
+    search_count = server.get("web_search_requests")
+    # Thinking tokens are billed as output and already inside output_tokens.
+    summary = usage_summary(usage.get("input_tokens"), usage.get("output_tokens"),
+                            details.get("thinking_tokens"), None, True, usage)
+    return summary, search_count if isinstance(search_count, int) else None
 
 
 def _retrieved_only_sources(blocks, cited_urls):
@@ -164,25 +223,34 @@ class AnthropicProvider(Provider):
     def parse(self, payload, requested_at, observed_at):
         blocks = [b for b in payload.get("content", []) if isinstance(b, dict)]
         text = "".join(b.get("text") or "" for b in blocks if b.get("type") == "text")
-        cited, cited_urls = _cited_sources(blocks)
+        cited, index_by_url = _cited_sources(blocks)
+        citations = cited + _retrieved_only_sources(blocks, set(index_by_url))
+        spans, dropped = _spans(blocks, index_by_url, [c.is_cited for c in citations])
+        usage, search_count = _usage(payload)
+        search_ran = any(b.get("type") == "web_search_tool_result" for b in blocks)
         return ProviderAnswer(
             platform=self.platform,
             model=payload.get("model") or self._cfg("_model", DEFAULT_MODEL),
             params=self._params(
                 callers=_caller_types(blocks),
-                search_ran=any(b.get("type") == "web_search_tool_result" for b in blocks),
+                search_ran=search_ran,
                 model_reported=bool(payload.get("model"))),
             requested_at=requested_at,
             observed_at=observed_at,
             answer_text=text,
-            citations=cited + _retrieved_only_sources(blocks, cited_urls),
+            citations=citations,
             cited_sources_available=_citations_were_observable(
                 blocks, self._cfg("_search_enabled", True)),
             # The search tool result block lists everything retrieved, cited or
             # not, so the retrieved set is visible whenever search ran.
-            retrieved_set_available=any(
-                b.get("type") == "web_search_tool_result" for b in blocks),
+            retrieved_set_available=search_ran,
             stop_reason=payload.get("stop_reason"),
+            searches=_searches(blocks),
+            search_count=search_count,
+            spans=spans,
+            spans_dropped=dropped,
+            usage=usage,
+            raw_payload=payload,
         )
 
     def ask(self, query_text):

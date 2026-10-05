@@ -10,17 +10,36 @@ import os
 from datetime import datetime, timezone
 from importlib import resources
 
-from answersnap.providers import ProviderAnswer, RawCitation, get_provider_class
+from answersnap import pricing
+from answersnap.providers import (
+    AnswerSpan,
+    ProviderAnswer,
+    RawCitation,
+    SearchQuery,
+    get_provider_class,
+)
+from answersnap.providers.spans import usage_summary
 
 # ---------------------------------------------------------------- constants
 ENGINE_LABELS = {"anthropic": "Claude", "openai": "ChatGPT", "google": "Gemini"}
 # The first name is the one to set; later ones are accepted aliases.
 KEY_ENV = {"anthropic": ("ANTHROPIC_API_KEY",), "openai": ("OPENAI_API_KEY",),
            "google": ("GEMINI_API_KEY", "GOOGLE_API_KEY")}
-# Rough per-call cost in USD, for the plan printed before a live run. Only
-# Anthropic has a measurement (≈$0.165 including web search, n=1); the others
-# print "no estimate" rather than a guess dressed as a number.
-COST_PER_CALL_USD = {"anthropic": 0.17, "openai": None, "google": None}
+# Usage of one real call per engine (the recorded responses under
+# providers/recorded/, n=1 each), priced at list price for the plan printed
+# before a live run. A rough guide only: answers vary in length and in how
+# many searches they make. After a run, cost comes from each answer's own usage.
+TYPICAL_USAGE = {
+    "anthropic": {"model": "claude-sonnet-5", "search_count": 2,
+                  "usage": {"input_tokens": 17599, "output_tokens": 1949,
+                            "reasoning_tokens": 262, "output_includes_reasoning": True}},
+    "openai": {"model": "gpt-5.1", "search_count": 1,
+               "usage": {"input_tokens": 7464, "output_tokens": 1700,
+                         "reasoning_tokens": 57, "output_includes_reasoning": True}},
+    "google": {"model": "gemini-3.7-flash", "search_count": None,
+               "usage": {"input_tokens": 211, "output_tokens": 1448,
+                         "reasoning_tokens": 817, "output_includes_reasoning": False}},
+}
 FIXTURE_PACKAGE = "answersnap.examples"
 FIXTURE_DIR = "fixtures"
 NO_FIXTURE_TEXT = "[dry run] No fixture answer exists for this question."
@@ -32,6 +51,16 @@ SKIPPED_UNVERIFIED = "skipped_unverified"
 
 def label(engine):
     return ENGINE_LABELS.get(engine, engine)
+
+
+def per_call_estimate_usd(engine, model=None):
+    """List-price cost of one typical call, or None when it cannot be priced."""
+    typical = TYPICAL_USAGE.get(engine)
+    if typical is None:
+        return None
+    usd, _ = pricing.estimate_cost_usd(engine, model or typical["model"],
+                                       typical["usage"], typical["search_count"])
+    return usd
 
 
 def key_names(engine):
@@ -79,6 +108,31 @@ def _fixture_citations(entries):
     return citations
 
 
+def _fixture_searches(variant):
+    searches = variant.get("searches")
+    if searches is None:
+        return None
+    return [SearchQuery(query=s["query"], results_count=s.get("results_count"))
+            for s in searches]
+
+
+def _fixture_spans(variant):
+    spans = variant.get("spans")
+    if spans is None:
+        return None
+    return [AnswerSpan(start=s["start"], end=s["end"],
+                       citation_indexes=tuple(s["citation_indexes"])) for s in spans]
+
+
+def _fixture_usage(variant):
+    usage = variant.get("usage")
+    if usage is None:
+        return None
+    return usage_summary(usage.get("input_tokens"), usage.get("output_tokens"),
+                         usage.get("reasoning_tokens"), usage.get("total_tokens"),
+                         usage.get("output_includes_reasoning", True), usage)
+
+
 class FixtureEngine:
     """Answers from bundled fictional fixtures: zero network, zero cost.
 
@@ -102,6 +156,12 @@ class FixtureEngine:
         return {"model_requested": self.model, "model_reported_by_platform": True,
                 "fixture": True}
 
+    def _search_count(self, variant):
+        # Mirrors the platform: Gemini reports queries but no billed count.
+        if variant.get("searches") is None or not self._document.get("search_count_reported", True):
+            return None
+        return len(variant["searches"])
+
     def answer(self, query_text, repeat):
         stamp = self._clock()
         variants = self._document["answers"].get(query_text)
@@ -120,7 +180,11 @@ class FixtureEngine:
             citations=_fixture_citations(variant.get("citations", [])),
             cited_sources_available=self._document["cited_sources_available"],
             retrieved_set_available=self._document["retrieved_set_available"],
-            stop_reason="fixture")
+            stop_reason="fixture",
+            searches=_fixture_searches(variant),
+            search_count=self._search_count(variant),
+            spans=_fixture_spans(variant),
+            usage=_fixture_usage(variant))
 
 
 def live_status(engine):

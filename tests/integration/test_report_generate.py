@@ -73,7 +73,7 @@ def test_every_output_carries_the_definitions(dry_run_dir):
         text = (dry_run_dir / name).read_text(encoding="utf-8")
         assert "Named in recommendation answers" in text
         assert "This is not the same as being recommended" in text
-    assert len(_report(dry_run_dir)["definitions"]) == 6
+    assert len(_report(dry_run_dir)["definitions"]) == 9
 
 
 def test_the_report_never_calls_its_own_metric_recommended():
@@ -131,3 +131,62 @@ def test_no_fetch_marks_faithfulness_not_checked(dry_run_dir):
     data = _report(dry_run_dir)
     anthropic = next(e for e in data["engines"] if e["engine"] == "anthropic")
     assert anthropic["faithfulness"]["status"] == "not_checked"
+
+
+# ---------------------------------------------------------------- record-2
+def test_dry_run_report_shows_queries_supported_sentences_and_usage(dry_run_dir):
+    data = _report(dry_run_dir)
+    assert data["schema"] == "report-2"
+    html = (dry_run_dir / "report.html").read_text(encoding="utf-8")
+    assert "Searched for" in html and "espresso coffee subscription for beginners" in html
+    assert "All cited sources (" in html
+    assert re.search(r'<div class="support"><mark>[^<]+</mark>', html)
+    assert "no cost (dry run)" in html
+    claude = next(e for e in data["engines"] if e["engine"] == "anthropic")
+    assert claude["usage"]["with_usage"] == claude["usage"]["answers"] > 0
+    assert data["run"]["record_schemas_on_disk"] == ["answer-2"]
+    # Fixtures carry no provider payload, so a dry run writes no raw file.
+    assert data["run"]["raw_payloads"] == "not_provided"
+    assert not list(dry_run_dir.glob("answers/*/*.raw.json"))
+
+
+def test_usage_is_never_totalled_across_engines(dry_run_dir):
+    data = _report(dry_run_dir)
+    # Only the per-engine sections may carry usage or cost, anywhere in the report.
+    def keys(node, path=()):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                yield path + (key,)
+                yield from keys(value, path + (key,))
+        elif isinstance(node, list):
+            for item in node:
+                yield from keys(item, path)
+    for path in keys({k: v for k, v in data.items() if k not in ("engines", "rows")}):
+        assert path[-1] not in ("usage", "cost", "input_tokens", "cost_estimate_usd"), path
+    assert all("usage" in e and "cost" in e for e in data["engines"])
+
+
+def test_an_answer_1_run_still_reports_and_says_not_recorded(dry_run_dir):
+    from builders import record
+    for path in dry_run_dir.glob("answers/*/*.json"):
+        path.unlink()
+    manifest = store.read_manifest(dry_run_dir)
+    manifest.pop("raw_payloads"), manifest.pop("record_schema")
+    store.write_manifest(dry_run_dir, {k: v for k, v in manifest.items() if k != "schema"})
+    legacy = record(engine="anthropic", text="Example Coffee Co. is fine.", legacy=True,
+                    citations=[{"url": "https://example-coffee.example/a", "title": None,
+                                "domain": "example-coffee.example", "is_cited": True,
+                                "position": 0, "cited_text": None}])
+    legacy.pop("_file")
+    store.write_json(store.answer_path(dry_run_dir, "anthropic", 0, 0), legacy)
+    report.generate(dry_run_dir, fetch=False, clock=lambda: STAMP)
+    data = _report(dry_run_dir)
+    (row,) = data["rows"]
+    assert row["spans_status"] == "not_recorded" and row["searches"] is None
+    assert data["run"]["record_schemas_on_disk"] == ["answer-1"]
+    assert data["run"]["raw_payloads"] is None
+    markdown = (dry_run_dir / "report.md").read_text(encoding="utf-8")
+    assert "| not recorded |" in markdown and "spans not recorded" in markdown
+    assert "usage not recorded" in markdown
+    assert "raw API responses: not recorded" in markdown
+    assert not re.search(r"\b0 searches\b|\b0 in\b", markdown)

@@ -99,3 +99,34 @@ def test_unverified_parser_is_refused_before_credentials(monkeypatch):
     status, reason = engines.live_status("anthropic")
     assert status == engines.SKIPPED_UNVERIFIED
     assert "not allowed to produce data" in reason
+
+
+@pytest.mark.parametrize("engine", SUPPORTED_ENGINES)
+def test_every_fixture_span_cuts_real_text_and_points_at_a_cited_source(engine):
+    fixture = engines.FixtureEngine(engine)
+    for question, variants in fixture._document["answers"].items():
+        for repeat in range(len(variants)):
+            answer = fixture.answer(question, repeat)
+            assert answer.searches is not None and answer.usage is not None
+            for span in answer.spans:
+                assert answer.answer_text[span.start:span.end].strip()
+                assert all(answer.citations[i].is_cited for i in span.citation_indexes)
+
+
+def test_fixture_search_count_follows_the_platform():
+    assert engines.FixtureEngine("anthropic").answer(EXAMPLE_QUESTION, 1).search_count == 2
+    assert engines.FixtureEngine("google").answer(EXAMPLE_QUESTION, 0).search_count is None
+
+
+def test_placeholder_answer_records_nothing_new():
+    answer = engines.FixtureEngine("google").answer("Not a fixture question?", 0)
+    assert answer.searches is None and answer.spans is None and answer.usage is None
+    assert answer.raw_payload is None
+
+
+@pytest.mark.parametrize("engine", SUPPORTED_ENGINES)
+def test_pre_run_estimate_exists_for_every_default_model(engine):
+    # Hand-priced from TYPICAL_USAGE at the list prices in pricing.py.
+    expected = {"anthropic": 0.074688, "openai": 0.03633, "google": 0.008651}
+    assert engines.per_call_estimate_usd(engine) == pytest.approx(expected[engine], abs=1e-6)
+    assert engines.per_call_estimate_usd(engine, "unpriced-model") is None

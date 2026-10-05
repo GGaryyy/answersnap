@@ -7,6 +7,7 @@ editor and `git diff`: the report is computed from these files and nothing else.
         manifest.json          what was asked, of whom, when, and how far it got
         config.frozen.json     the config as it was at run time
         answers/<engine>/q00_r0.json         one answer, raw text and citations
+        answers/<engine>/q00_r0.raw.json     the API response as received (--no-raw skips)
         answers/<engine>/q00_r0.error.json   a call that failed, kept, not hidden
         fetched/<hash>.json    a cited page as fetched, for the faithfulness check
         report.json / report.md / report.html
@@ -15,13 +16,25 @@ editor and `git diff`: the report is computed from these files and nothing else.
 import hashlib
 import json
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
 from answersnap.config import brand_slug
 
 # ---------------------------------------------------------------- constants
-ANSWER_SCHEMA = "answer-1"
+ANSWER_SCHEMA = "answer-2"
+RAW_SUFFIX = ".raw.json"
+# Only these are answers; .error.json, .raw.json and .tmp files sit beside them.
+ANSWER_FILE = re.compile(r"^q\d{2,}_r\d+\.json$")
+RAW_KEPT, RAW_NOT_KEPT, RAW_NOT_PROVIDED = "kept", "not_kept", "not_provided"
+# What an answer-1 record (or any record written before a field existed) reads
+# as: unknown, never zero.
+ANSWER_2_DEFAULTS = {
+    "searches": None, "search_count": None, "spans": None, "spans_dropped": None,
+    "usage": None, "raw_status": None, "raw_file": None, "raw_sha256": None,
+    "raw_bytes": None, "cost_estimate_usd": None, "cost_basis": None,
+}
 ERROR_SCHEMA = "error-1"
 MANIFEST_SCHEMA = "manifest-1"
 MANIFEST_NAME = "manifest.json"
@@ -66,6 +79,21 @@ def write_json(path, document):
     os.replace(temporary, path)
 
 
+def _write_bytes_atomic(path, data):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_bytes(data)
+    os.replace(temporary, path)
+
+
+def write_raw_payload(path, payload):
+    """Write the response as received; return its size and digest for the record."""
+    data = (json.dumps(payload, ensure_ascii=False, indent=1, sort_keys=True) + "\n").encode("utf-8")
+    _write_bytes_atomic(path, data)
+    return {"sha256": "sha256:" + hashlib.sha256(data).hexdigest(), "bytes": len(data)}
+
+
 def read_json(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
@@ -76,6 +104,10 @@ def answer_path(run_dir, engine, query_index, repeat):
 
 def error_path(run_dir, engine, query_index, repeat):
     return Path(run_dir) / ANSWERS_DIR / engine / f"q{query_index:02d}_r{repeat}.error.json"
+
+
+def raw_path(run_dir, engine, query_index, repeat):
+    return Path(run_dir) / ANSWERS_DIR / engine / f"q{query_index:02d}_r{repeat}{RAW_SUFFIX}"
 
 
 def fetched_path(run_dir, url):
@@ -93,8 +125,25 @@ def _citation_record(citation):
             "cited_text": citation.cited_text}
 
 
+def _search_record(search):
+    return {"query": search.query, "results_count": search.results_count}
+
+
+def _span_record(span):
+    return {"start": span.start, "end": span.end,
+            "citation_indexes": list(span.citation_indexes)}
+
+
+def _optional(items, convert):
+    return None if items is None else [convert(item) for item in items]
+
+
+def raw_fields(status, file=None, sha256=None, size=None):
+    return {"raw_status": status, "raw_file": file, "raw_sha256": sha256, "raw_bytes": size}
+
+
 def answer_record(answer, *, run_id, query_index, query, repeat, prompt_set_version,
-                  prompt_set_hash):
+                  prompt_set_hash, raw=None, cost=None):
     """Everything the report needs, and nothing normalised: the answer text is
     stored exactly as the engine returned it, because every evidence offset in
     the report points into it."""
@@ -122,6 +171,15 @@ def answer_record(answer, *, run_id, query_index, query, repeat, prompt_set_vers
         "stop_reason": answer.stop_reason,
         "prompt_set_version": prompt_set_version,
         "prompt_set_hash": prompt_set_hash,
+        # None in any of these means the platform did not say, never "none".
+        "searches": _optional(answer.searches, _search_record),
+        "search_count": answer.search_count,
+        "spans": _optional(answer.spans, _span_record),
+        "spans_dropped": answer.spans_dropped,
+        "usage": answer.usage,
+        **(raw or raw_fields(RAW_NOT_PROVIDED if answer.raw_payload is None else RAW_NOT_KEPT)),
+        "cost_estimate_usd": cost[0] if cost else None,
+        "cost_basis": cost[1] if cost else None,
     }
 
 
@@ -138,13 +196,15 @@ def _answer_files(run_dir):
     root = Path(run_dir) / ANSWERS_DIR
     if not root.is_dir():
         return []
-    return sorted(p for p in root.glob("*/*.json") if not p.name.endswith(".error.json"))
+    return sorted(p for p in root.glob("*/*.json") if ANSWER_FILE.match(p.name))
 
 
 def load_answers(run_dir):
     records = []
     for path in _answer_files(run_dir):
         record = read_json(path)
+        for key, value in ANSWER_2_DEFAULTS.items():
+            record.setdefault(key, value)
         record["_file"] = path.relative_to(run_dir).as_posix()
         records.append(record)
     return records

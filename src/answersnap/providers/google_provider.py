@@ -12,10 +12,12 @@ from answersnap.providers.base import (
     ProviderAnswer,
     ProviderError,
     RawCitation,
+    SearchQuery,
     register,
 )
 from answersnap.providers.citation_host import resolve_domain
 from answersnap.providers.http import HttpError, post_json
+from answersnap.providers.spans import code_point_at, usage_summary, utf8_offsets, valid_spans
 
 # Consumer-default tier: the model behind the free Gemini app. Pinned to an
 # exact id, never a floating alias like gemini-flash-latest — an alias would
@@ -40,9 +42,74 @@ def _grounding_chunks(candidate):
     return metadata, [c for c in chunks if isinstance(c, dict)]
 
 
+def _web(chunk):
+    web = chunk.get("web")
+    return web if isinstance(web, dict) else {}
+
+
+def _supports(metadata):
+    return [s for s in metadata.get("groundingSupports") or [] if isinstance(s, dict)]
+
+
+def _support_candidate(support, text, offsets, index_by_chunk):
+    """(start, end, indexes) in code points, or None if it cannot be placed.
+
+    Segment offsets are UTF-8 bytes. The segment also repeats its own text, so
+    a span whose slice does not reproduce it is dropped: a wrong guess at the
+    unit then shows up as missing spans, never as spans in the wrong place.
+    """
+    segment = support.get("segment")
+    if not isinstance(segment, dict):
+        return None
+    start = code_point_at(offsets, segment.get("startIndex", 0))
+    end = code_point_at(offsets, segment.get("endIndex"))
+    if start is None or end is None:
+        return None
+    quoted = segment.get("text")
+    if isinstance(quoted, str) and text[start:end].strip() != quoted.strip():
+        return None
+    chunk_indexes = support.get("groundingChunkIndices")
+    if not isinstance(chunk_indexes, list):
+        return None
+    indexes = [index_by_chunk.get(i) if isinstance(i, int) else None for i in chunk_indexes]
+    return start, end, indexes
+
+
+def _spans(metadata, text, index_by_chunk, cited_flags):
+    if "groundingSupports" not in metadata:
+        return None, 0
+    offsets = utf8_offsets(text)
+    candidates, unplaced = [], 0
+    for support in _supports(metadata):
+        candidate = _support_candidate(support, text, offsets, index_by_chunk)
+        if candidate is None:
+            unplaced += 1
+        else:
+            candidates.append(candidate)
+    spans, dropped = valid_spans(candidates, len(text), cited_flags)
+    return spans, dropped + unplaced
+
+
+def _searches(metadata):
+    queries = metadata.get("webSearchQueries")
+    if not isinstance(queries, list):
+        return None
+    return [SearchQuery(query=q) for q in queries if isinstance(q, str)]
+
+
+def _usage(payload):
+    usage = payload.get("usageMetadata")
+    if not isinstance(usage, dict):
+        return None
+    # candidatesTokenCount excludes thinking; totalTokenCount includes it.
+    return usage_summary(usage.get("promptTokenCount"), usage.get("candidatesTokenCount"),
+                         usage.get("thoughtsTokenCount"), usage.get("totalTokenCount"),
+                         False, usage)
+
 
 def _key_from_environment():
     return next((os.environ[name] for name in API_KEY_ENVS if os.environ.get(name)), None)
+
 
 @register
 class GoogleProvider(Provider):
@@ -91,31 +158,47 @@ class GoogleProvider(Provider):
         # groundingSupports says which chunks actually back a span of the answer;
         # a chunk nobody points at was retrieved but not leaned on.
         supported_indices = set()
-        for support in metadata.get("groundingSupports") or []:
-            if isinstance(support, dict):
-                for index in support.get("groundingChunkIndices") or []:
-                    if isinstance(index, int):
-                        supported_indices.add(index)
+        for support in _supports(metadata):
+            for index in support.get("groundingChunkIndices") or []:
+                if isinstance(index, int):
+                    supported_indices.add(index)
 
-        cited, retrieved, seen = [], [], set()
+        # A URL is cited if ANY of its chunks is supported, not just the first.
+        cited_urls = {_web(chunks[i]).get("uri")
+                      for i in supported_indices if 0 <= i < len(chunks)}
+        # Chunk index -> (is_cited, position within its group). A repeated URL
+        # maps to the entry already made for it.
+        cited, retrieved, entry_by_url, entry_by_chunk = [], [], {}, {}
         for index, chunk in enumerate(chunks):
-            web = chunk.get("web") or {}
+            web = _web(chunk)
             url = web.get("uri")
-            if not url or url in seen:
+            if not url:
                 continue
-            seen.add(url)
+            if url in entry_by_url:
+                entry_by_chunk[index] = entry_by_url[url]
+                continue
             # Every grounding uri is a vertexaisearch redirect; the site itself
             # is only in the title. Without this, no clinic's own domain ever
             # matches a Gemini citation and "cited 0 times" is manufactured.
             domain = resolve_domain(url, web.get("title"))
-            if index in supported_indices:
+            if url in cited_urls:
+                entry_by_url[url] = (True, len(cited))
                 cited.append(RawCitation(url=url, title=web.get("title"),
                                          position=len(cited), is_cited=True,
                                          resolved_domain=domain))
             else:
+                entry_by_url[url] = (False, len(retrieved))
                 retrieved.append(RawCitation(url=url, title=web.get("title"),
                                              position=None, is_cited=False,
                                              resolved_domain=domain))
+            entry_by_chunk[index] = entry_by_url[url]
+
+        citations = cited + retrieved
+        # Cited sources come first in citations, so a retrieved one sits after them.
+        index_by_chunk = {i: (pos if is_cited else len(cited) + pos)
+                          for i, (is_cited, pos) in entry_by_chunk.items()}
+        spans, dropped = _spans(metadata, text, index_by_chunk,
+                                [c.is_cited for c in citations])
 
         channel_present = "groundingSupports" in metadata
         return ProviderAnswer(
@@ -126,12 +209,19 @@ class GoogleProvider(Provider):
             requested_at=requested_at,
             observed_at=observed_at,
             answer_text=text,
-            citations=cited + retrieved,
+            citations=citations,
             cited_sources_available=bool(self._cfg("_search_enabled", True) and channel_present),
             # groundingChunks lists every chunk retrieved; groundingSupports
             # says which were leaned on. Both halves visible.
             retrieved_set_available=bool(chunks),
             stop_reason=candidate.get("finishReason"),
+            searches=_searches(metadata),
+            # Google bills grounded prompts, not searches, and reports no count.
+            search_count=None,
+            spans=spans,
+            spans_dropped=dropped,
+            usage=_usage(payload),
+            raw_payload=payload,
         )
 
     def ask(self, query_text):

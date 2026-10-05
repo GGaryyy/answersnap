@@ -1,0 +1,91 @@
+# Build, test and publish answersnap with PyPI Trusted Publishing (no API token).
+#
+#   Actions tab -> "Publish" -> Run workflow   publishes to TestPyPI
+#   git tag v0.2.0 && git push origin v0.2.0   publishes to PyPI
+#
+# The PyPI and TestPyPI projects must each list this repository, this workflow
+# file (publish.yml) and the matching environment ("pypi" / "testpypi") as a
+# trusted publisher. A version can be uploaded only once, so try TestPyPI first.
+
+name: Publish
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv run --extra dev pytest -q
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+      - name: Tag must match the package version
+        if: github.ref_type == 'tag'
+        run: |
+          version=$(uv run --no-project python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          if [ "v$version" != "${GITHUB_REF_NAME}" ]; then
+            echo "tag ${GITHUB_REF_NAME} does not match pyproject version $version"
+            exit 1
+          fi
+      - run: uv build
+      - name: Built wheel installs and runs a dry run
+        run: |
+          uv venv /tmp/smoke
+          uv pip install --python /tmp/smoke dist/*.whl
+          cd /tmp && /tmp/smoke/bin/answersnap init --out smoke.yaml
+          /tmp/smoke/bin/answersnap run --config smoke.yaml --dry-run --no-fetch --out /tmp/smoke-out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  testpypi:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/answersnap
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  pypi:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/answersnap
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

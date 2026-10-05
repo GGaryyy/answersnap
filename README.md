@@ -105,7 +105,7 @@ Directories from v0.1 (`answer-1` records) still report. Fields they never captu
 
 An engine is only allowed to produce data after its parser has handled a real recorded response. See `answersnap verify-providers`. Adapters for Perplexity and xAI exist but are not enabled yet, because they have not passed this check.
 
-## Known limits (v0.1)
+## Known limits
 
 - One snapshot per run. Comparing two snapshots is planned; until then, use the intervals: a change smaller than them is not a change.
 - The unknown-entity patterns in `metrics/mention.py` are tuned for one category and are not used by the CLI yet.

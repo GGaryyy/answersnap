@@ -24,12 +24,14 @@ import socket
 import ssl
 from urllib.parse import quote, urljoin, urlparse
 
+from answersnap import __version__
+
 ALLOWED_SCHEMES = ("http", "https")
 DEFAULT_PORTS = {"http": 80, "https": 443}
 TIMEOUT_SECONDS = 10
 MAX_BYTES = 2_000_000
 MAX_REDIRECTS = 3
-USER_AGENT = "answersnap/0.1 (+https://github.com/GGaryyy/answersnap)"
+USER_AGENT = f"answersnap/{__version__} (+https://github.com/GGaryyy/answersnap)"
 
 
 class UnsafeUrlError(ValueError):

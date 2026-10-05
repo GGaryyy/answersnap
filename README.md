@@ -68,13 +68,47 @@ Keys are read from the environment only, never written to the run directory or t
 answersnap doctor --config answersnap.yaml
 ```
 
+## Set up your brand
+
+You don't pass a brand on the command line. You describe it, and the questions to ask, in `answersnap.yaml`. Start from the file `answersnap init` writes and replace the fictional coffee brand with your own:
+
+```yaml
+schema: 1
+
+brand:
+  name: Example Dental
+  aliases: ["Example Dental Clinic", "ExampleDental"]   # every spelling an answer might use
+  owned_domains: ["example-dental.example"]             # citing these hosts counts as citing you
+
+competitors:                                            # optional; reported side by side
+  - name: Sample Smiles
+    aliases: []
+
+engines: [anthropic, openai, google]                    # drop the ones you have no key for
+repeats: 3                                              # times each question is asked, per engine
+
+recommendation_intents: [recommendation]
+
+prompt_set:
+  version: 1                                            # bump it whenever you change any question
+  queries:
+    - text: "Which clinic is best for dental implants in Taipei?"
+      intent: recommendation
+    - text: "Is Example Dental worth the price?"
+      intent: trust
+```
+
+What each part does:
+
+- **Your brand name is never sent to the engines.** Only the `queries` are sent, word for word, so leave your name out of recommendation questions to see whether an engine names you on its own.
+- **Aliases matter.** Matching is plain string matching, so an answer that uses a spelling you didn't list counts as not naming you.
+- **Questions are yours to write.** `answersnap` does not invent or research them. Write them the way your buyers would ask, in any language.
+- **Intents are free-form labels.** Only questions whose intent is listed in `recommendation_intents` count toward the headline "named in recommendation answers".
+- **Cost scales with question count.** A run makes questions × `repeats` × engines calls, and prints an estimate before it spends anything.
+
 ## A real run
 
-1. Edit `answersnap.yaml`:
-   - your brand and every alias it goes by
-   - your owned domains
-   - your competitors
-   - the questions your buyers actually ask
+1. Edit `answersnap.yaml` for your brand (see [Set up your brand](#set-up-your-brand)).
 2. Set an API key for each engine you want (see [API keys](#api-keys-bring-your-own)). Engines without a key are skipped, and the report names them.
 3. Check your setup, then run:
 

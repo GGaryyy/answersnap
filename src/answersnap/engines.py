@@ -6,6 +6,7 @@ second, hand-rolled client anywhere in this package.
 """
 
 import json
+import os
 from datetime import datetime, timezone
 from importlib import resources
 
@@ -13,8 +14,9 @@ from answersnap.providers import ProviderAnswer, RawCitation, get_provider_class
 
 # ---------------------------------------------------------------- constants
 ENGINE_LABELS = {"anthropic": "Claude", "openai": "ChatGPT", "google": "Gemini"}
-KEY_ENV = {"anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY",
-           "google": "GOOGLE_API_KEY"}
+# The first name is the one to set; later ones are accepted aliases.
+KEY_ENV = {"anthropic": ("ANTHROPIC_API_KEY",), "openai": ("OPENAI_API_KEY",),
+           "google": ("GEMINI_API_KEY", "GOOGLE_API_KEY")}
 # Rough per-call cost in USD, for the plan printed before a live run. Only
 # Anthropic has a measurement (≈$0.165 including web search, n=1); the others
 # print "no estimate" rather than a guess dressed as a number.
@@ -30,6 +32,14 @@ SKIPPED_UNVERIFIED = "skipped_unverified"
 
 def label(engine):
     return ENGINE_LABELS.get(engine, engine)
+
+
+def key_names(engine):
+    return " or ".join(KEY_ENV[engine])
+
+
+def key_present(engine):
+    return any(os.environ.get(name) for name in KEY_ENV[engine])
 
 
 class LiveEngine:
@@ -120,7 +130,7 @@ def live_status(engine):
         return SKIPPED_UNVERIFIED, (f"{label(engine)}: parser has no verified recorded "
                                     "response; it is not allowed to produce data")
     if not provider_class().credentials_available():
-        return SKIPPED_NO_CREDENTIALS, f"{label(engine)}: not run — {KEY_ENV[engine]} is not set"
+        return SKIPPED_NO_CREDENTIALS, f"{label(engine)}: not run — {key_names(engine)} is not set"
     return "ok", None
 
 

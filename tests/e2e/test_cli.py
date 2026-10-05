@@ -77,7 +77,7 @@ def test_report_rebuilds_from_the_directory_alone(config_path, tmp_path, no_netw
 
 
 def test_live_run_without_keys_spends_nothing_and_says_why(config_path, tmp_path, monkeypatch, capsys):
-    for key in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY"):
+    for key in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
         monkeypatch.delenv(key, raising=False)
     out = tmp_path / "out"
     code = cli.main(["run", "--config", str(config_path), "--out", str(out), "--yes", "--no-fetch"])
@@ -151,14 +151,15 @@ def test_verify_providers_lists_supported_and_verified(capsys):
 
 def test_doctor_reports_keys_and_config(config_path, monkeypatch, capsys):
     monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key-not-real")
     assert cli.main(["doctor", "--config", str(config_path)]) == cli.EXIT_OK
     out = capsys.readouterr().out
-    assert "GOOGLE_API_KEY not set" in out and "config ok: Example Coffee Co." in out
+    assert "GEMINI_API_KEY or GOOGLE_API_KEY not set" in out and "config ok: Example Coffee Co." in out
 
 
 def test_doctor_without_any_ready_engine_is_not_healthy(monkeypatch, capsys):
-    for key in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY"):
+    for key in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
         monkeypatch.delenv(key, raising=False)
     assert cli.main(["doctor"]) == cli.EXIT_INCOMPLETE
     assert "no engine is ready" in capsys.readouterr().out
@@ -189,7 +190,7 @@ def test_resuming_a_subset_never_hides_the_other_engines(config_path, tmp_path, 
 ])
 def test_resume_refuses_to_mix_live_and_fixture_answers(config_path, tmp_path, monkeypatch,
                                                         capsys, first, resume_flags):
-    for key in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY"):
+    for key in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
         monkeypatch.delenv(key, raising=False)
     out = tmp_path / "out"
     cli.main(["run", "--config", str(config_path), "--out", str(out), "--yes", "--no-fetch", *first])

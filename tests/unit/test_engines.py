@@ -60,10 +60,27 @@ def test_google_fixture_keeps_the_resolved_domain():
 
 @pytest.mark.parametrize("engine", SUPPORTED_ENGINES)
 def test_missing_key_is_a_named_skip(engine, monkeypatch):
-    monkeypatch.delenv(engines.KEY_ENV[engine], raising=False)
+    for name in engines.KEY_ENV[engine]:
+        monkeypatch.delenv(name, raising=False)
     status, reason = engines.live_status(engine)
     assert status == engines.SKIPPED_NO_CREDENTIALS
-    assert engines.KEY_ENV[engine] in reason
+    assert engines.KEY_ENV[engine][0] in reason
+
+
+@pytest.mark.parametrize("name", ["GEMINI_API_KEY", "GOOGLE_API_KEY"])
+def test_gemini_key_is_found_under_either_name(name, monkeypatch):
+    for other in engines.KEY_ENV["google"]:
+        monkeypatch.delenv(other, raising=False)
+    monkeypatch.setenv(name, "test-key-not-real")
+    assert engines.key_present("google")
+    assert engines.live_status("google") == ("ok", None)
+
+
+def test_the_documented_gemini_name_wins_when_both_are_set(monkeypatch):
+    from answersnap.providers.google_provider import GoogleProvider
+    monkeypatch.setenv("GEMINI_API_KEY", "preferred")
+    monkeypatch.setenv("GOOGLE_API_KEY", "fallback")
+    assert GoogleProvider()._api_key == "preferred"
 
 
 def test_build_engines_skips_unavailable_and_keeps_order(monkeypatch):

@@ -6,7 +6,6 @@ for exit 2, and it says what is missing.
 """
 
 import argparse
-import os
 import sys
 from datetime import datetime, timezone
 from importlib import resources
@@ -21,7 +20,7 @@ from answersnap.config import (
     parse_config,
     prompt_identity,
 )
-from answersnap.engines import KEY_ENV, build_engines, label, live_status
+from answersnap.engines import build_engines, key_names, key_present, label, live_status
 from answersnap.providers import get_provider_class, registered_platforms
 
 # ---------------------------------------------------------------- constants
@@ -186,8 +185,8 @@ def cmd_doctor(args):
     for engine in SUPPORTED_ENGINES:
         status, reason = live_status(engine)
         ready += status == "ok"
-        key = "set" if os.environ.get(KEY_ENV[engine]) else "not set"
-        _say(f"{label(engine):8} {KEY_ENV[engine]} {key:8} " + ("ready" if status == "ok" else reason))
+        key = "set" if key_present(engine) else "not set"
+        _say(f"{label(engine):8} {key_names(engine)} {key:8} " + ("ready" if status == "ok" else reason))
     healthy = ready > 0
     if not healthy:
         _say("no engine is ready for a live run (dry runs still work)")

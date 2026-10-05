@@ -23,7 +23,10 @@ from answersnap.providers.http import HttpError, post_json
 # either breaks silently or reports a change we cannot date.
 DEFAULT_MODEL = "gemini-3.7-flash"
 ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-API_KEY_ENV = "GOOGLE_API_KEY"
+# GEMINI_API_KEY is the name Google documents for the Gemini API; the older
+# GOOGLE_API_KEY still works, so a key set under either name is found.
+API_KEY_ENVS = ("GEMINI_API_KEY", "GOOGLE_API_KEY")
+API_KEY_ENV = API_KEY_ENVS[0]
 
 
 def _first_candidate(payload):
@@ -37,6 +40,10 @@ def _grounding_chunks(candidate):
     return metadata, [c for c in chunks if isinstance(c, dict)]
 
 
+
+def _key_from_environment():
+    return next((os.environ[name] for name in API_KEY_ENVS if os.environ.get(name)), None)
+
 @register
 class GoogleProvider(Provider):
     platform = "google"
@@ -44,7 +51,7 @@ class GoogleProvider(Provider):
     def __init__(self, model=DEFAULT_MODEL, api_key=None, transport=None,
                  search_enabled=True):
         self._model = model
-        self._api_key = api_key or os.environ.get(API_KEY_ENV)
+        self._api_key = api_key or _key_from_environment()
         self._transport = transport or post_json
         self._search_enabled = search_enabled
 
@@ -129,7 +136,7 @@ class GoogleProvider(Provider):
 
     def ask(self, query_text):
         if not self._api_key:
-            raise ProviderError(f"{API_KEY_ENV} is not set")
+            raise ProviderError(f"{' or '.join(API_KEY_ENVS)} is not set")
         requested_at = datetime.now(timezone.utc)
         try:
             payload = self._transport(

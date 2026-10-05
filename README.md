@@ -37,7 +37,7 @@ The dry run answers from bundled fictional fixtures and makes no network calls, 
    - your owned domains
    - your competitors
    - the questions your buyers actually ask
-2. Set an API key for each engine you want: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY`. Engines without a key are skipped, and the report names them.
+2. Set an API key for each engine you want: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` (`GOOGLE_API_KEY` also works). Engines without a key are skipped, and the report names them.
 3. Check your setup, then run:
 
 ```bash

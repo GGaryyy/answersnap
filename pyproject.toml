@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "answersnap"
-version = "0.2.1"
+version = "0.2.2"
 description = "Auditable AI-visibility snapshots: what ChatGPT, Claude and Gemini actually said about a brand, with the evidence kept."
 readme = "README.md"
 requires-python = ">=3.11"

@@ -20,6 +20,8 @@ pipx install answersnap        # or: uvx answersnap --help
 
 Python 3.11+. The latest unreleased code: `pipx install git+https://github.com/GGaryyy/answersnap`.
 
+**Installing gives you the dry run only.** Asking real engines needs your own API keys. `answersnap` ships with no keys and runs no server: every call goes from your machine straight to each provider and is billed to your account there. See [API keys](#api-keys-bring-your-own) below.
+
 ## Five-minute dry run (no API keys, no cost)
 
 ```bash
@@ -30,6 +32,42 @@ open output/answersnap/example-coffee-co/*/report.html
 
 The dry run answers from bundled fictional fixtures and makes no network calls, so you can see the full report before spending anything.
 
+## API keys (bring your own)
+
+A real run calls each engine's API with **your** key. You need a key only for the engines you want; engines without one are skipped, and the report names them.
+
+| Engine | Environment variable | Where to get a key |
+|---|---|---|
+| Claude | `ANTHROPIC_API_KEY` | [Claude Console](https://platform.claude.com/settings/keys) |
+| ChatGPT | `OPENAI_API_KEY` | [OpenAI Platform](https://platform.openai.com/api-keys) |
+| Gemini | `GEMINI_API_KEY` (`GOOGLE_API_KEY` also works) | [Google AI Studio](https://aistudio.google.com/apikey) |
+
+API access is billed separately from consumer subscriptions. A ChatGPT Plus, Claude Pro or Gemini app subscription does not include it, so add billing or credits on each platform first.
+
+Set the keys in the shell you run `answersnap` from:
+
+```bash
+# macOS / Linux
+export ANTHROPIC_API_KEY="your-key"
+export OPENAI_API_KEY="your-key"
+export GEMINI_API_KEY="your-key"
+```
+
+```powershell
+# Windows PowerShell
+$env:ANTHROPIC_API_KEY = "your-key"
+$env:OPENAI_API_KEY = "your-key"
+$env:GEMINI_API_KEY = "your-key"
+```
+
+`export` lasts only for that terminal session. To keep the keys, add the lines to `~/.zshrc` or `~/.bashrc`, or set them as user environment variables on Windows. `answersnap` does not read `.env` files.
+
+Keys are read from the environment only, never written to the run directory or the report. Then check which engines are ready:
+
+```bash
+answersnap doctor --config answersnap.yaml
+```
+
 ## A real run
 
 1. Edit `answersnap.yaml`:
@@ -37,7 +75,7 @@ The dry run answers from bundled fictional fixtures and makes no network calls, 
    - your owned domains
    - your competitors
    - the questions your buyers actually ask
-2. Set an API key for each engine you want: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` (`GOOGLE_API_KEY` also works). Engines without a key are skipped, and the report names them.
+2. Set an API key for each engine you want (see [API keys](#api-keys-bring-your-own)). Engines without a key are skipped, and the report names them.
 3. Check your setup, then run:
 
 ```bash

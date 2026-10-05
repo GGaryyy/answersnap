@@ -15,10 +15,10 @@ Most AI-visibility tools give you one score. `answersnap` gives you the evidence
 ## Install
 
 ```bash
-pipx install git+https://github.com/GGaryyy/answersnap
+pipx install answersnap        # or: uvx answersnap --help
 ```
 
-Python 3.11+. (Not on PyPI yet.)
+Python 3.11+. The latest unreleased code: `pipx install git+https://github.com/GGaryyy/answersnap`.
 
 ## Five-minute dry run (no API keys, no cost)
 
